@@ -1,0 +1,15 @@
+# Visual Studio 临时文件
+.vs/
+*.sdf
+*.suo
+*.opensdf
+*.tlog
+*.log
+*.obj
+*.exe
+*.pdb
+*.ilk
+
+# CMake/构建文件
+build/
+bin/
