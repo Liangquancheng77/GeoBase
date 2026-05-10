@@ -6,9 +6,9 @@ struct Vector3 {
 
 	double x, y, z;
 
-	Vector3() : x(0),y(0),z(0){}
+	Vector3() : x(0), y(0), z(0) {}
 
-	Vector3(double x, double y, double z) : x(x),y(y),z(z) {}
+	Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
 
 
 	//向量加法
@@ -40,8 +40,8 @@ struct Vector3 {
 	//向量叉积
 	Vector3 cross(const Vector3& other) const {
 		return Vector3(
-			y * other.z - other.y * z, 
-			other.x * z - x * other.z, 
+			y * other.z - other.y * z,
+			other.x * z - x * other.z,
 			x * other.y - other.x * y
 		);
 	}
@@ -55,7 +55,7 @@ struct Vector3 {
 	Vector3 normalized() {
 		double len = length();
 		if (len < 1e-9)  return Vector3();
-		return *this/len;
+		return *this / len;
 	}
 
 
