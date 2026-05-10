@@ -1,15 +1,29 @@
-# Visual Studio 临时文件
+# Visual Studio 缓存与配置
 .vs/
-*.sdf
 *.suo
+*.user
+*.sdf
 *.opensdf
 *.tlog
 *.log
-*.obj
-*.exe
-*.pdb
-*.ilk
 
-# CMake/构建文件
-build/
+# 编译输出目录（Debug/Release/x64）
+x64/
+Debug/
+Release/
 bin/
+obj/
+
+# 编译生成的二进制文件
+*.exe
+*.dll
+*.pdb
+*.idb
+*.ilk
+*.obj
+*.lib
+*.exp
+*.iobj
+*.ipdb
+*.pch
+*.lastbuildstate
