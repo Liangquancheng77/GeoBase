@@ -27,9 +27,18 @@
     <ClCompile Include="TestVector3.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="TestMatrix4.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4.h">
       <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
