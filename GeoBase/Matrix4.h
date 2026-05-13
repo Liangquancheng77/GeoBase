@@ -1,8 +1,10 @@
 
 #pragma once
 #include "Vector3.h"
+#include "Common.h"
 
-inline const double PI = 3.14159265358979323846;
+struct EulerAngles;
+
 struct Matrix4
 {
 
@@ -70,6 +72,12 @@ struct Matrix4
 
     //仿射矩阵的逆
     Matrix4 inverseAffine() const;
+
+    //欧拉角转正交矩阵
+    static Matrix4 fromEulerAngles(const EulerAngles angles);
+
+    //正交矩阵转欧拉角
+    EulerAngles toEulerAngles() const;
 
 
 };

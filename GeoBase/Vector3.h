@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-
+#include "Common.h"
 
 struct Vector3 {
 

@@ -4,7 +4,6 @@ using namespace std;
 #include <cmath>
 #include<gtest/gtest.h>
 
-//const double PI = 3.14159265358979323846;
 //const double EPS = 1e-9;
 
 

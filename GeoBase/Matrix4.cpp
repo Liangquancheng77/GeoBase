@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cmath>
 #include <stdexcept>
-
+#include "Matrix3.h"
 
 // 默认构造函数
 // 直接初始化为单位矩阵，保证矩阵一开始就是合法状态
@@ -272,4 +272,46 @@ Matrix4 Matrix4::inverseAffine() const {
 	return mat;
 
 
+}
+
+
+// 欧拉角转正交矩阵
+Matrix4 Matrix4::fromEulerAngles(const EulerAngles angles) {
+
+	Matrix4 my = Matrix4::createRotationY(angles.yaw);
+	Matrix4 mx = Matrix4::createRotationX(angles.pitch);
+	Matrix4 mz = Matrix4::createRotationZ(angles.roll);
+
+	return mz.multiply(mx).multiply(my);
+
+}
+
+// 正交矩阵转欧拉角
+EulerAngles Matrix4::toEulerAngles() const {
+	EulerAngles angles;
+
+	// 提取矩阵元素
+	double m00 = m[0][0], m01 = m[0][1], m02 = m[0][2];
+	double m10 = m[1][0], m11 = m[1][1], m12 = m[1][2];
+	double m20 = m[2][0], m21 = m[2][1], m22 = m[2][2];
+
+	// 计算俯仰角pitch的余弦值
+	double cos_pitch = sqrt(m00 * m00 + m10 * m10);
+	// 判断是否进入万向锁（余弦值接近0）
+	bool is_gimbal_lock = cos_pitch < 1e-6;
+
+	if (!is_gimbal_lock) {
+		// 正常情况：非万向锁
+		angles.yaw = atan2(m21, m22);    // 绕Y轴偏航角
+		angles.pitch = atan2(-m20, cos_pitch); // 绕X轴俯仰角
+		angles.roll = atan2(m10, m00);   // 绕Z轴滚转角
+	}
+	else {
+		// 特殊情况：万向锁（pitch ≈ ±90°）
+		angles.yaw = 0.0;               // 固定偏航角为0
+		angles.pitch = atan2(-m20, cos_pitch);
+		angles.roll = atan2(-m12, m11);  // 重新计算滚转角
+	}
+
+	return angles;
 }

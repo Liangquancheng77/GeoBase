@@ -1,7 +1,9 @@
 #pragma once
 #include "Vector3.h"
+#include "Common.h"
 
 struct Matrix4;   // 前向声明，用于互转
+struct EulerAngles;
 
 struct Matrix3 {
 public:
@@ -35,4 +37,33 @@ public:
 
     // 工具
     bool isApprox(const Matrix3& other, double eps = 1e-9) const;
+
+    double determinant() const;
+    Matrix3 inverse() const;   // 假设行列式不为零
+
+    //欧拉角转正交矩阵
+    static Matrix3 fromEulerAngles(const EulerAngles angles);
+
+    //正交矩阵转欧拉角
+    EulerAngles toEulerAngles() const;
+
+};
+
+//欧拉角
+struct EulerAngles {
+    double yaw;   // 绕Y轴（偏航），弧度制
+    double pitch; // 绕X轴（俯仰），弧度制
+    double roll;  // 绕Z轴（滚转），弧度制
+
+    EulerAngles() : yaw(0),pitch(0),roll(0) {}
+
+    // 转角度制方便调试
+    Vector3 toDegrees() {
+        return Vector3(yaw * 180 / PI, pitch * 180 / PI, roll * 180 / PI);
+    }
+
+    //判断是否接近万向锁
+    bool isGimbalLocked(double eps=1e-6) {
+        return fabs(fabs(pitch) - PI / 2) < eps;
+    }
 };
