@@ -52,7 +52,7 @@ struct Vector3 {
 	}
 
 	//单位化
-	Vector3 normalized() {
+	Vector3 normalized() const {
 		double len = length();
 		if (len < 1e-9)  return Vector3();
 		return *this / len;

@@ -65,5 +65,11 @@ struct Matrix4
     // 全局重载 ==（使用近似相等）
     bool operator==(const Matrix4& other) const;
 
+    //创建观察矩阵
+    static Matrix4 createLookAt(const Vector3& eye, const Vector3& target, const Vector3& up = Vector3(0,1,0));
+
+    //仿射矩阵的逆
+    Matrix4 inverseAffine() const;
+
 
 };

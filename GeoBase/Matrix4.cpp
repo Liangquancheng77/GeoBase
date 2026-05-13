@@ -1,6 +1,7 @@
 #include "Matrix4.h"
 #include <cstring>
 #include <cmath>
+#include <stdexcept>
 
 
 // 默认构造函数
@@ -204,4 +205,71 @@ bool Matrix4::isEqualApprox(const Matrix4& other, double eps) const {
 // 直接使用默认容差的近似相等
 bool Matrix4::operator==(const Matrix4& other) const {
 	return isEqualApprox(other);
+}
+
+//创建观察矩阵
+Matrix4 Matrix4::createLookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
+
+	Vector3 forward = target - eye;
+	Vector3 right = forward.cross(up);
+	Vector3 up2 = right.cross(forward);
+	Matrix4 mat;
+	mat.m[0][0] = right.x;
+	mat.m[0][1] = right.y;
+	mat.m[0][2] = right.z;
+	mat.m[0][3] = -right.dot(eye);
+	mat.m[1][0] = up2.x;
+	mat.m[1][1] = up2.y;
+	mat.m[1][2] = up2.z;
+	mat.m[1][3] = -up2.dot(eye);
+	mat.m[2][0] = forward.x;
+	mat.m[2][1] = forward.y;
+	mat.m[2][2] = forward.z;
+	mat.m[2][3] = -forward.dot(eye);
+
+	return mat;
+
+}
+
+//仿射矩阵的逆
+Matrix4 Matrix4::inverseAffine() const {
+	// 1. 判断是否是仿射矩阵
+	constexpr double EPS = 1e-6f;
+	if (fabs(m[3][0])> EPS || fabs(m[3][1]) > EPS || fabs(m[3][2])> EPS || fabs(m[3][3]-1.0f) > EPS) {
+		throw std::invalid_argument("不是仿射矩阵");
+	}
+	
+	Matrix4 mat;
+
+	// 2. 提取旋转矩阵的转置（逆矩阵的旋转部分）
+	mat.m[0][0] = m[0][0];
+	mat.m[0][1] = m[1][0];
+	mat.m[0][2] = m[2][0];
+
+	mat.m[1][0] = m[0][1];
+	mat.m[1][1] = m[1][1];
+	mat.m[1][2] = m[2][1];
+
+	mat.m[2][0] = m[0][2];
+	mat.m[2][1] = m[1][2];
+	mat.m[2][2] = m[2][2];
+
+	// 3. 计算 -R^T * t（逆矩阵的平移部分）
+	float tx = m[0][3];
+	float ty = m[1][3];
+	float tz = m[2][3];
+
+	mat.m[0][3] = -(mat.m[0][0] * tx + mat.m[0][1] * ty + mat.m[0][2] * tz);
+	mat.m[1][3] = -(mat.m[1][0] * tx + mat.m[1][1] * ty + mat.m[1][2] * tz);
+	mat.m[2][3] = -(mat.m[2][0] * tx + mat.m[2][1] * ty + mat.m[2][2] * tz);
+
+	// 4. 最后一行保持 [0, 0, 0, 1]
+	mat.m[3][0] = 0.0f;
+	mat.m[3][1] = 0.0f;
+	mat.m[3][2] = 0.0f;
+	mat.m[3][3] = 1.0f;
+
+	return mat;
+
+
 }

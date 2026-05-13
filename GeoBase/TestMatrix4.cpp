@@ -363,6 +363,18 @@ TEST(Matrix4Test, LargeTranslationDoesNotOverflow) {
 	EXPECT_DOUBLE_EQ(result.z, 1e10 + 1.0);
 }
 
+
+
+//相机坐标和目标坐标有极大距离时不会导致浮点溢出
+TEST(Matrix4Test, LookAt_LargeDistanceNoOverflow) {
+	Vector3 eye(0, 0, 1e9);
+	Vector3 target(0, 0, 3e9);
+	Matrix4 mat = Matrix4::createLookAt(eye, target);
+	EXPECT_NEAR(mat.m[0][3], 0, 1e-9);
+	EXPECT_NEAR(mat.m[1][3], 0, 1e-9);
+	EXPECT_NEAR(mat.m[2][3], -2e18, 1e-9);
+}
+
 // 旋转角度为2π或 - 2π时，结果应近似单位矩阵
 TEST(Matrix4Test, RotationExtremeAngles) {
 	Matrix4 rot = Matrix4::createRotationZ(2.0 * PI);
@@ -372,7 +384,68 @@ TEST(Matrix4Test, RotationExtremeAngles) {
 	EXPECT_TRUE(rot.isEqualApprox(identity, 1e-9));
 }
 
-//==================== 10. 复合功能：旋转矩阵正交性 ====================
+// 非仿射矩阵求逆的异常测试
+TEST(Matrix4Test, InverseAffine_NonAffineMatrixThrows) {
+	// 构造一个非仿射矩阵（最后一行不是 0 0 0 1）
+	Matrix4 mat;
+	mat.m[3][0] = 1.0f; // 修改最后一行，使其不满足仿射矩阵条件
+
+	// 预期调用 inverseAffine 会抛出 std::invalid_argument 异常
+	EXPECT_THROW({
+		mat.inverseAffine();
+		}, std::invalid_argument);
+}
+
+// 非仿射矩阵求逆：最后一行赋值极大浮点数（极端数值场景）→ 抛异常
+TEST(Matrix4Test, InverseAffine_LargeValueLastRowThrows) {
+	Matrix4 mat;
+	mat.setIdentity();
+	// 几何算法极端数值测试，防止数值溢出导致判断失效
+	mat.m[3][2] = 1e10f;
+	EXPECT_THROW(mat.inverseAffine(), std::invalid_argument);
+}
+
+// 非仿射矩阵求逆：W分量刚好超出EPS边界（1.000002f，浮点边界测试）
+TEST(Matrix4Test, InverseAffine_WComponentOutOfToleranceThrows) {
+	Matrix4 mat;
+	mat.setIdentity();
+	mat.m[3][3] = 1.000002f; // 误差刚好超过1e-6
+	EXPECT_THROW(mat.inverseAffine(), std::invalid_argument);
+}
+
+
+//==================== 11. 仿射矩阵的逆 ====================
+
+// 单位矩阵的逆还是单位矩阵
+TEST(Matrix4Test, InverseAffine_Identity) {
+	Matrix4 mat;
+	Matrix4 result = mat.inverseAffine();
+	EXPECT_TRUE(mat.multiply(result).isEqualApprox(mat, 1e-9));
+	EXPECT_NEAR(result.m[0][0], 1.0, 1e-9);
+	EXPECT_NEAR(result.m[1][1], 1.0, 1e-9);
+	EXPECT_NEAR(result.m[2][2], 1.0, 1e-9);
+	EXPECT_NEAR(result.m[3][3], 1.0, 1e-9);
+	EXPECT_NEAR(result.m[2][1], 0.0, 1e-9);
+}
+// 平移矩阵的逆是反向平移
+TEST(Matrix4Test, InverseAffine_Translation) {
+	Matrix4 mat;
+	mat.m[0][3] = 1.0;
+	mat.m[1][3] = 7.0;
+	mat.m[2][3] = 4.0;
+	Matrix4 result = mat.inverseAffine();
+	Matrix4 mat2;
+	EXPECT_TRUE(mat.multiply(result).isEqualApprox(mat2, 1e-9));
+	EXPECT_NEAR(result.m[0][3], -1.0, 1e-9);
+	EXPECT_NEAR(result.m[1][3], -7.0, 1e-9);
+	EXPECT_NEAR(result.m[2][3], -4.0, 1e-9);
+	EXPECT_NEAR(result.m[3][0], 0.0, 1e-9);
+}
+
+
+
+
+//==================== 11. 复合功能：旋转矩阵正交性 ====================
 
 //验证旋转矩阵列向量单位正交（点积为0，模长为1）
 TEST(Matrix4Test, OrthogonalMatrixProperties) {

@@ -129,11 +129,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="Matrix4.cpp" />
+    <ClCompile Include="TestMatrix3.cpp" />
     <ClCompile Include="TestMatrix4.cpp" />
     <ClCompile Include="TestVector3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
