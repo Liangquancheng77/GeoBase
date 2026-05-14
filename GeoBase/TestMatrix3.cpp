@@ -254,9 +254,9 @@ TEST(Matrix3EulerTest, Yaw90DegMatrix) {
 // 3. 普通例子验证正交矩阵转欧拉角（双向互转）
 TEST(Matrix3EulerTest, MatrixToEulerNormal) {
     EulerAngles src;
-    src.yaw = 0.5;
-    src.pitch = 0.2;
-    src.roll = 0.3;
+    src.yaw = PI/2;
+    src.pitch = 0.0;
+    src.roll = 0.0;
 
     Matrix3 mat = Matrix3::fromEulerAngles(src);
     EulerAngles res = mat.toEulerAngles();

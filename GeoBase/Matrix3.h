@@ -23,6 +23,7 @@ public:
     // 运算
     Matrix3 operator*(const Matrix3& other) const;
     Vector3 operator*(const Vector3& v) const;   // 变换向量
+    // 转置
     Matrix3 transpose() const;
 
     // 设置
@@ -38,7 +39,10 @@ public:
     // 工具
     bool isApprox(const Matrix3& other, double eps = 1e-9) const;
 
+    // 求行列式
     double determinant() const;
+
+    // 求逆
     Matrix3 inverse() const;   // 假设行列式不为零
 
     //欧拉角转正交矩阵
@@ -46,6 +50,9 @@ public:
 
     //正交矩阵转欧拉角
     EulerAngles toEulerAngles() const;
+
+    // 是否是正交矩阵
+    bool isOrthogonal() const;
 
 };
 
@@ -56,6 +63,7 @@ struct EulerAngles {
     double roll;  // 绕Z轴（滚转），弧度制
 
     EulerAngles() : yaw(0),pitch(0),roll(0) {}
+    EulerAngles(double _yaw, double _pitch, double _roll) : yaw(_yaw),pitch(_pitch),roll(_roll) {}
 
     // 转角度制方便调试
     Vector3 toDegrees() {

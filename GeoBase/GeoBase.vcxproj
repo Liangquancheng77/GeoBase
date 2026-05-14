@@ -131,14 +131,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="Matrix4.cpp" />
+    <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="TestMatrix3.cpp" />
     <ClCompile Include="TestMatrix4.cpp" />
+    <ClCompile Include="TestQuaternion.cpp" />
     <ClCompile Include="TestVector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Matrix4.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

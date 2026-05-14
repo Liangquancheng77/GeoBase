@@ -39,6 +39,12 @@
     <ClCompile Include="TestMatrix3.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Quaternion.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="TestQuaternion.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector3.h">
@@ -51,6 +57,9 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Common.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
       <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>

@@ -93,6 +93,7 @@ Vector3 Matrix3::operator*(const Vector3& v) const {
     );
 }
 
+// 转置
 Matrix3 Matrix3::transpose() const {
     Matrix3 res;
     for (int i = 0; i < 3; ++i)
@@ -129,6 +130,7 @@ bool Matrix3::isApprox(const Matrix3& other, double eps) const {
     return true;
 }
 
+// 求行列式
 double Matrix3::determinant() const {
     // 按第一行展开
     long double a = m[0][0], b = m[0][1], c = m[0][2];
@@ -145,6 +147,7 @@ double Matrix3::determinant() const {
     return static_cast<double>(det);
 }
 
+// 求逆
 Matrix3 Matrix3::inverse() const {
     double det = determinant();
     // 假设 det != 0，实际使用时请检查
@@ -183,40 +186,127 @@ Matrix3 Matrix3::fromEulerAngles(const EulerAngles angles) {
 
 }
 
-// 正交矩阵转欧拉角
-EulerAngles Matrix3::toEulerAngles() const {
-    EulerAngles angles;
-    // 提取矩阵元素（按你的 Matrix3 布局，假设 m[row][col]）
-    double r00 = m[0][0], r01 = m[0][1], r02 = m[0][2];
-    double r10 = m[1][0], r11 = m[1][1], r12 = m[1][2];
-    double r20 = m[2][0], r21 = m[2][1], r22 = m[2][2];
 
-    // 俯仰角 pitch = asin(r21)  （范围 -π/2 ～ π/2）
-    double pitch = asin(r21);
+// 正交矩阵转欧拉角
+//EulerAngles Matrix3::toEulerAngles() const {
+//
+//    double r11 = m[0][0], r12 = m[0][1], r13 = m[0][2];
+//    double r21 = m[1][0], r22 = m[1][1]; 
+//    double r31 = m[2][0], r32 = m[2][1], r33 = m[2][2];
+//
+//    //double pitch = atan2(-r31,sqrt(r11*r11+r21*r21));
+//
+//    // 鲁棒性：防止浮点误差导致根号内为负数
+//    double sqrtVal = r11 * r11 + r21 * r21;
+//    sqrtVal = std::fmax(sqrtVal, 0.0);
+//    double pitch = atan2(-r31, std::sqrt(sqrtVal));
+//
+//    EulerAngles angles;
+//    angles.pitch = pitch;
+//    
+//    if (std::abs(std::abs(pitch)-(PI/2.0)) > EPS_ABS) {
+//        //非万向锁
+//        double r32 = m[2][1];
+//        double r33 = m[2][2];
+//        double yaw = atan2(r21, r11);
+//        double roll = atan2(r32, r33);
+//        angles.yaw = yaw;
+//        angles.roll = roll;
+//    }
+//    else {
+//        //万向锁,令其中之一等于0
+//        double yaw = 0.0;
+//        double roll;
+//        if (pitch > 0.0) {
+//            roll = atan2(m[0][1], m[0][2]);
+//        }
+//        else {
+//            roll = atan2(-m[0][1], -m[0][2]);
+//        }
+//        angles.yaw = yaw;
+//        angles.roll = roll;
+//    }
+//
+//    // 角度归一化
+//    if (angles.yaw > PI) angles.yaw -= 2 * PI;
+//    if (angles.yaw < -PI) angles.yaw += 2 * PI;
+//    if (angles.roll > PI) angles.roll -= 2 * PI;
+//    if (angles.roll < -PI) angles.roll += 2 * PI;
+//
+//    return angles;
+//
+//
+//}
+
+EulerAngles Matrix3::toEulerAngles() const {
+    double r11 = m[0][0], r12 = m[0][1], r13 = m[0][2];
+    double r21 = m[1][0], r22 = m[1][1]; // r21, r23 未使用
+    double r31 = m[2][0], r32 = m[2][1], r33 = m[2][2];
+
+    // pitch = β ∈ [-π/2, π/2]
+    double cosPitch = std::sqrt(r31 * r31 + r33 * r33);
+    double pitch = std::atan2(r32, cosPitch);
+
+    EulerAngles angles;
     angles.pitch = pitch;
 
-    // 处理万向锁（pitch 接近 ±π/2）
-    const double eps = 1e-9;
-    if (fabs(fabs(pitch) - PI / 2.0) < eps) {
-        // 万向锁：令 roll = 0，从矩阵其他元素计算 yaw
-        angles.roll = 0.0;
-        // 此时 r20 = -cos(pitch)*sin(yaw) ≈ 0, r22 = cos(pitch)*cos(yaw) ≈ 0，需要另寻公式
-        // 使用 r00 和 r10 来计算 yaw：
-        // 当 pitch = +π/2 时: R = [ cos(yaw+roll), -sin(yaw+roll), 0; sin(yaw+roll), cos(yaw+roll), 0; 0,0,1 ]
-        // 可以用 atan2(r10, r00) 得到 yaw+roll
-        double yaw_roll = atan2(r10, r00);
-        angles.yaw = yaw_roll;  // 因为 roll = 0
+    const double EPS = 1e-12;
+    if (std::abs(cosPitch) > EPS) {   // 等价于 cosβ ≠ 0
+        double yaw = std::atan2(-r31, r33);   // α
+        double roll = std::atan2(-r12, r22);   // γ
+        angles.yaw = yaw;
+        angles.roll = roll;
     }
     else {
-        // 正常情况
-        angles.roll = atan2(-r01, r11);
-        angles.yaw = atan2(-r20, r22);
+        // 万向锁：强制 roll = 0，求 yaw
+        double yaw = std::atan2(r13, r11);
+        angles.yaw = yaw;
+        angles.roll = 0.0;
     }
 
-    // 将角度归一化到 [-π, π] 范围（可选）
-    angles.yaw = fmod(angles.yaw + PI, 2 * PI) - PI;
-    angles.roll = fmod(angles.roll + PI, 2 * PI) - PI;
-    // pitch 已在 [-π/2, π/2] 内，无需归一化
-
+    // 如需归一化到 (-π, π]，可保留原有代码（实际 atan2 已满足）
     return angles;
+}
+
+// 是否是正交矩阵
+bool Matrix3::isOrthogonal() const {
+    Matrix3 trans = transpose();
+    Matrix3 result = trans * *this;
+    //for (size_t i = 0; i < 3; i++)
+    //{
+    //    for (size_t j = 0; j < 3; j++)
+    //    {
+    //        if (i==j)
+    //        {
+    //            if (std::abs(result.m[i][j] - 1.0) > EPS_ABS)
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (std::abs(result.m[i][j]) > EPS_ABS)
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //    }
+    //}
+
+    for (size_t i = 0; i < 3; i++)
+    {
+        double len = m[i][0] * m[i][0] + m[i][1] * m[i][1] + m[i][2] * m[i][2];
+        if (std::abs(len - 1.0) > EPS_ABS) {
+            return false;
+        }
+        // 验证行向量的正交性
+        for (size_t j = i + 1; j < 3; j++)
+        {
+            if (std::abs(m[i][0] * m[j][0] + m[i][1] * m[j][1] + m[i][2] * m[j][2]) > EPS_ABS) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
