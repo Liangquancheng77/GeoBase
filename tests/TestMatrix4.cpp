@@ -1,6 +1,6 @@
 #include<iostream>
 using namespace std;
-#include "Matrix4.h";
+#include "../include/GeoBase/Matrix4.h"
 #include <cmath>
 #include<gtest/gtest.h>
 

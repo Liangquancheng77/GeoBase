@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="GeoBase/GeoBase.vcxproj" Id="8feab4b7-fdeb-469e-baaa-a7af2355eb66" />
+  <Project Path="GeoBase.vcxproj" Id="8feab4b7-fdeb-469e-baaa-a7af2355eb66" />
 </Solution>

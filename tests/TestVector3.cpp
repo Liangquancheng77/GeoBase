@@ -1,5 +1,5 @@
 #include<gtest/gtest.h>
-#include "Vector3.h"
+#include "../include/GeoBase/Vector3.h"
 
 // 测试向量加法运算
 TEST(Vector3Test, Addition) {

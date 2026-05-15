@@ -1,8 +1,8 @@
-#include "Matrix4.h"
+#include "../include/GeoBase/Matrix4.h"
 #include <cstring>
 #include <cmath>
 #include <stdexcept>
-#include "Matrix3.h"
+#include "../include/GeoBase/Matrix3.h"
 
 // 默认构造函数
 // 直接初始化为单位矩阵，保证矩阵一开始就是合法状态

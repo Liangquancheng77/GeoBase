@@ -62,9 +62,7 @@ struct Vector3 {
 
 };
 
-
-
-
+using Point3 = Vector3;
 
 
 

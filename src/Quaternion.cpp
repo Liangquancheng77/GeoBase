@@ -1,4 +1,4 @@
-#include "Quaternion.h"
+#include "../include/GeoBase/Quaternion.h"
 #include <cassert>
 #include <stdexcept>
 

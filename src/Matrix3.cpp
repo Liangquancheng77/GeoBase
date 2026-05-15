@@ -1,5 +1,5 @@
-#include "Matrix3.h"
-#include "Matrix4.h"   // 需要 Matrix4 定义
+#include "../include/GeoBase/Matrix3.h"
+#include "../include/GeoBase/Matrix4.h"   // 需要 Matrix4 定义
 #include <cmath>
 #include <cstring>
 
