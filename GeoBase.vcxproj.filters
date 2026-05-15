@@ -54,14 +54,17 @@
     <ClCompile Include="src\Renderer.cpp">
       <Filter>源文件\Viewer</Filter>
     </ClCompile>
-    <ClCompile Include="src\viewer.cpp">
-      <Filter>源文件\Viewer</Filter>
-    </ClCompile>
     <ClCompile Include="thirdparty\glad\glad.c">
       <Filter>ThirdParty</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Viewer.cpp">
+      <Filter>源文件\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestPlane.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +85,18 @@
     </ClInclude>
     <ClInclude Include="thirdparty\glad\glad.h">
       <Filter>ThirdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>源文件\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewer.h">
+      <Filter>源文件\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\Plane.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Plane.cpp">
+      <Filter>源文件\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

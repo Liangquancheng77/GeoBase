@@ -315,3 +315,19 @@ EulerAngles Matrix4::toEulerAngles() const {
 
 	return angles;
 }
+
+
+// 正交投影矩阵实现
+Matrix4 Matrix4::createOrthographic(double left, double right, double bottom, double top, double nearVal, double farVal) {
+	Matrix4 mat;
+	mat.setIdentity();
+
+	mat.m[0][0] = 2.0 / (right - left);
+	mat.m[1][1] = 2.0 / (top - bottom);
+	mat.m[2][2] = -2.0 / (farVal - nearVal);
+	mat.m[0][3] = -(right + left) / (right - left);
+	mat.m[1][3] = -(top + bottom) / (top - bottom);
+	mat.m[2][3] = -(farVal + nearVal) / (farVal - nearVal);
+
+	return mat;
+}

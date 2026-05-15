@@ -134,3 +134,24 @@ Quaternion Quaternion::conjugate() const {
 Quaternion Quaternion::inverse() const {
 	return conjugate();
 }
+
+
+// 从轴和角度创建四元数
+Quaternion Quaternion::fromAxisAngle(const Vector3& axis, double angle) {
+	double halfAngle = angle * 0.5;
+	double s = std::sin(halfAngle);
+	return Quaternion(
+		std::cos(halfAngle),
+		axis.x * s,
+		axis.y * s,
+		axis.z * s
+	);
+}
+
+// 用四元数旋转向量
+Vector3 Quaternion::rotate(const Vector3& v) const {
+	// 公式：v' = q * v * q⁻¹（单位四元数q⁻¹ = q.conjugate()）
+	Quaternion qv(0, v.x, v.y, v.z);
+	Quaternion result = (*this) * qv * conjugate();
+	return Vector3(result.x, result.y, result.z);
+}

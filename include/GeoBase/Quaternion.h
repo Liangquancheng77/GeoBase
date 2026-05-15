@@ -41,5 +41,11 @@ struct Quaternion
     // 归一化 变成单位四元数
     Quaternion& normalize();
 
+    // 新增：从轴和角度创建四元数（解决你相机里的错误用法）
+    static Quaternion fromAxisAngle(const Vector3& axis, double angle);
+
+    // 新增：用四元数旋转向量（解决 rotate 错误）
+    Vector3 rotate(const Vector3& v) const;
+
 
 };
