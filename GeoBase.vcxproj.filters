@@ -66,6 +66,21 @@
     <ClCompile Include="tests\TestPlane.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\AABB.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Plane.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Triangle3.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestAABB.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestTriangle3.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -95,8 +110,11 @@
     <ClInclude Include="include\GeoBase\Plane.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Plane.cpp">
-      <Filter>源文件\Math</Filter>
+    <ClInclude Include="include\GeoBase\AABB.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\Triangle3.h">
+      <Filter>头文件\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

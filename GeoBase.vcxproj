@@ -128,26 +128,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Matrix3.cpp" />
     <ClCompile Include="src\Matrix4.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\Quaternion.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Triangle3.cpp" />
+    <ClCompile Include="tests\TestAABB.cpp" />
     <ClCompile Include="tests\TestMatrix3.cpp" />
     <ClCompile Include="tests\TestMatrix4.cpp" />
     <ClCompile Include="tests\TestPlane.cpp" />
     <ClCompile Include="tests\TestQuaternion.cpp" />
+    <ClCompile Include="tests\TestTriangle3.cpp" />
     <ClCompile Include="tests\TestVector3.cpp" />
     <ClCompile Include="thirdparty\glad\glad.c" />
     <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\GeoBase\AABB.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />
     <ClInclude Include="include\GeoBase\Matrix4.h" />
     <ClInclude Include="include\GeoBase\Plane.h" />
     <ClInclude Include="include\GeoBase\Quaternion.h" />
+    <ClInclude Include="include\GeoBase\Triangle3.h" />
     <ClInclude Include="include\GeoBase\Vector3.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="thirdparty\glad\glad.h" />

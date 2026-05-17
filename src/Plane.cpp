@@ -10,6 +10,14 @@ Plane::Plane(const Vector3& normal, const Point3& origin) {
 	this->origin = origin;
 }
 
+// 三点确定一个平面
+Plane Plane::fromPoints(const Point3& p0, const Point3& p1, const Point3& p2) {
+	Vector3 edge1 = p1 - p0;
+	Vector3 edge2 = p2 - p0;
+	Vector3 normal = edge1.cross(edge2).normalized();
+	return Plane(normal, p0);
+}
+
 // 归一化法线
 void Plane::normalize() {
 	this->normal = this->normal.normalized();

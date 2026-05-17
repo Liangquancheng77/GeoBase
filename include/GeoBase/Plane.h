@@ -20,6 +20,8 @@ struct Plane
 	// 构造函数
     Plane(const Vector3& normal, const Point3& origin);
 
+	// 三点确定一个平面
+	static Plane fromPoints(const Point3& p0, const Point3& p1, const Point3& p2);
 
     // 归一化法线
     void normalize();
