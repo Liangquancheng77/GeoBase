@@ -80,9 +80,10 @@ struct Matrix4
     EulerAngles toEulerAngles() const;
 
 
-    // 新增：正交投影矩阵（解决 ortho 错误）
+    // 正交投影矩阵（解决 ortho 错误）
     static Matrix4 createOrthographic(double left, double right, double bottom, double top, double nearVal, double farVal);
 
-
+	// 求逆矩阵（适用于一般矩阵，性能较低）
+	Matrix4 inverse() const;
 
 };

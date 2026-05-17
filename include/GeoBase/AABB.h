@@ -1,6 +1,7 @@
 #pragma once
 #include "Vector3.h"
 #include "Matrix4.h"
+#include "Ray.h"
 
 struct AABB
 {
@@ -38,5 +39,8 @@ struct AABB
 
 	// 用矩阵变换AABB，返回新的AABB
 	AABB transform(const Matrix4& mat) const;
+
+	// 射线与AABB求交，返回是否相交以及交点参数tMinOut和tMaxOut
+	bool intersect(const Ray& ray, double& tMinOut, double& tMaxOut) const;
 
 };

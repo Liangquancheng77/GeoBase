@@ -53,3 +53,18 @@ PlaneSide Plane::getSide(const Point3& point, double eps) const {
 	}
 	return PlaneSide::ON_PLANE;
 }
+
+// 判断射线是否与平面相交，返回交点参数t和交点坐标
+bool Plane::intersect(const Ray& ray, double& t, Point3& hitPoint) const {
+	double  denom = ray.direction.dot(normal);
+	if (std::abs(denom) < EPS_ABS) {
+		return false; // 射线与平面平行或者在平面上，无有效交点
+	}
+	t = (origin - ray.origin).dot(normal) / denom;
+	if (t + EPS_ABS < 0)
+	{
+		return false;
+	}
+	hitPoint = ray.pointAt(t);
+	return true;
+}

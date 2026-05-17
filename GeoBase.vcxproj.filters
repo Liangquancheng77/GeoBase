@@ -81,6 +81,12 @@
     <ClCompile Include="tests\TestTriangle3.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\Ray.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestRay.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -114,6 +120,9 @@
       <Filter>头文件\Math</Filter>
     </ClInclude>
     <ClInclude Include="include\GeoBase\Triangle3.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\Ray.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
   </ItemGroup>

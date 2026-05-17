@@ -94,3 +94,123 @@ AABB AABB::transform(const Matrix4& mat) const {
 	}
 	return AABB(Point3(minX, minY, minZ), Point3(maxX, maxY, maxZ));
 }
+
+// 射线与AABB求交，返回是否相交以及交点参数tMinOut和tMaxOut
+bool AABB::intersect(const Ray& ray, double& tMinOut, double& tMaxOut) const {
+	double tix, tiy, tiz, tox, toy, toz;
+
+	if (std::abs(ray.direction.x) < EPS_ABS)
+	{
+		if (ray.origin.x < min.x || ray.origin.x > max.x)
+		{
+			return false;
+		}
+		tix = std::numeric_limits<double>::lowest();
+		tox = std::numeric_limits<double>::max();
+	}
+	else {
+		double tx1 = (min.x - ray.origin.x) / ray.direction.x;
+		double tx2 = (max.x - ray.origin.x) / ray.direction.x;
+		if (ray.direction.x > EPS_ABS)
+		{
+			tix = tx1;
+			tox = tx2;
+		} 
+		else {
+			tix = tx2;
+			tox = tx1;
+		}
+	}
+
+	if (std::abs(ray.direction.y) < EPS_ABS)
+	{
+		if (ray.origin.y < min.y || ray.origin.y > max.y)
+		{
+			return false;
+		}
+		tiy = std::numeric_limits<double>::lowest();
+		toy = std::numeric_limits<double>::max();
+	}
+	else
+	{
+		double ty1 = (min.y - ray.origin.y) / ray.direction.y;
+		double ty2 = (max.y - ray.origin.y) / ray.direction.y;
+		if (ray.direction.y > EPS_ABS)
+		{
+			tiy = ty1;
+			toy = ty2;
+		}
+		else
+		{
+			tiy = ty2;
+			toy = ty1;
+		}
+	}
+
+	if (std::abs(ray.direction.z) < EPS_ABS)
+	{
+		if (ray.origin.z < min.z || ray.origin.z > max.z)
+		{
+			return false;
+		}
+		tiz = std::numeric_limits<double>::lowest();
+		toz = std::numeric_limits<double>::max();
+	}
+	else
+	{
+		double tz1 = (min.z - ray.origin.z) / ray.direction.z;
+		double tz2 = (max.z - ray.origin.z) / ray.direction.z;
+		if (ray.direction.z > EPS_ABS)
+		{
+			tiz = tz1;
+			toz = tz2;
+		}
+		else
+		{
+			tiz = tz2;
+			toz = tz1;
+		}
+	}
+
+	double tEnter = std::max({ tix, tiy, tiz });
+	double tExit = std::min({ tox, toy, toz });
+	if (tEnter > tExit || tExit < 0)
+	{
+		return false;
+	}
+	tMinOut = tEnter;
+	tMaxOut = tExit;
+	return true;
+}
+
+
+
+
+
+// 射线与AABB求交，返回是否相交以及交点参数tMinOut和tMaxOut
+//bool AABB::intersect(const Ray& ray, double& tMinOut, double& tMaxOut) const {
+//	double tMin = (min.x - ray.origin.x) / ray.direction.x;
+//	double tMax = (max.x - ray.origin.x) / ray.direction.x;
+//	if (tMin > tMax) std::swap(tMin, tMax);
+//	double tyMin = (min.y - ray.origin.y) / ray.direction.y;
+//	double tyMax = (max.y - ray.origin.y) / ray.direction.y;
+//	if (tyMin > tyMax) std::swap(tyMin, tyMax);
+//	if ((tMin > tyMax) || (tyMin > tMax))
+//	return false;
+//	if (tyMin > tMin)
+//	tMin = tyMin;
+//	if (tyMax < tMax)
+//		tMax = tyMax;
+//	double tzMin = (min.z - ray.origin.z) / ray.direction.z;
+//	double tzMax = (max.z - ray.origin.z) / ray.direction.z;
+//	if (tzMin > tzMax) std::swap(tzMin, tzMax);
+//	if ((tMin > tzMax) || (tzMin > tMax))
+//	return false;
+//	if (tzMin > tMin)
+//	tMin = tzMin;
+//	if (tzMax < tMax)
+//		tMax = tzMax;
+//	tMinOut = tMin;
+//	tMaxOut = tMax;
+//	return true;
+//}
