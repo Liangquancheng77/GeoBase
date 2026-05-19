@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "../include/GeoBase/AABB.h"
+#include "../include/GeoBase/Triangle3.h"
 
 // 创建 (0,0,0)-(2,2,2) 的AABB，测试点 (1,1,1) 在内，(3,3,3) 在外
 TEST(AABBTest, ContainsPoint) {
@@ -72,22 +73,85 @@ TEST(AABBTest, ZeroSizeAABB) {
 	EXPECT_TRUE(box.intersects(box)); // 与自身相交
 }
 
+// 测试三角形AABB相交，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABB) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(1, 1, 1), Point3(3, 1, 1), Point3(1, 3, 1));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 相交
+}
+
+// 测试三角形AABB不相交，验证 intersectTriangleAABB 返回 false
+TEST(AABBTest, IntersectTriangleAABBNoIntersect) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(3, 3, 3), Point3(4, 3, 3), Point3(3, 4, 3));
+	EXPECT_FALSE(box.intersectTriangleAABB(tri)); // 不相交
+}
+
+// 测试三角形完全包含在AABB内，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBContained) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(0.5, 0.5, 0.5), Point3(1.5, 0.5, 0.5), Point3(0.5, 1.5, 0.5));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 三角形完全包含在AABB内
+}
+
+// 测试三角形与AABB边界相交，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBBoundary) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(1, 2, 2), Point3(1, 2, 1), Point3(0, 5, 0));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 三角形与AABB边界相交
+}
+
+// 测试三角形与AABB顶点相交，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBCorner) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2, 2, 2), Point3(3, 2, 2), Point3(2, 3, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 三角形与AABB顶点相交
+}
+
+// 测试三角形刚好偏离AABB顶点(比EPS_ABS大一点,超出容差)相交，验证 intersectTriangleAABB 返回 false
+TEST(AABBTest, IntersectTriangleAABBCornerNoIntersect) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2 + EPS_ABS * 2, 2 + EPS_ABS * 2, 2 + EPS_ABS * 2),
+		Point3(3, 2, 2), Point3(2, 3, 2));
+	EXPECT_FALSE(box.intersectTriangleAABB(tri)); // 三角形刚好偏离AABB顶点相交
+}
+
+// 测试三角形刚好偏离AABB顶点相交(比EPS_ABS小一点,在容差内)，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBCornerNoIntersect2) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2 + EPS_ABS * 0.5, 2 + EPS_ABS * 0.5, 2 + EPS_ABS * 0.5),
+		Point3(3, 2, 2), Point3(2, 3, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 三角形刚好偏离AABB顶点相交
+}
 
 
+// 退化测试三角形与AABB顶点相交，三角形退化为一条线，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBDegenerateLine) {
+	AABB box(Point3(0, 0, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2, 2, 2), Point3(2, 2, 2), Point3(3, 2, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // 三角形退化为一条线
+}
 
+// 退化测试三角形与AABB顶点相交，AABB退化为平面，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBDegeneratePlane) {
+	AABB box(Point3(0, 2, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2, 2, 2), Point3(2, 2, 2), Point3(3, 2, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // AABB退化为平面
+}
 
+// 退化测试三角形与AABB顶点相交，AABB退化为直线，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBDegenerateLine2) {
+	AABB box(Point3(2, 2, 0), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2, 2, 2), Point3(2, 2, 2), Point3(3, 2, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // AABB退化为直线
+}
 
-
-
-
-
-
-
-
-
-
-
-
+// 退化测试三角形与AABB顶点相交，AABB退化为点，验证 intersectTriangleAABB 返回 true
+TEST(AABBTest, IntersectTriangleAABBDegeneratePoint) {
+	AABB box(Point3(2, 2, 2), Point3(2, 2, 2));
+	Triangle3 tri(Point3(2, 2, 2), Point3(2, 2, 2), Point3(3, 2, 2));
+	EXPECT_TRUE(box.intersectTriangleAABB(tri)); // AABB退化为点
+}
 
 
 

@@ -51,7 +51,15 @@ struct Vector3 {
 		return std::sqrt(x * x + y * y + z * z);
 	}
 
-	//单位化
+	//// 点在向量上的投影
+	//Point3 projectOnto(const Vector3& other) const {
+	//	double otherLenSq = other.dot(other);
+	//	if (otherLenSq < EPS_ABS) return Vector3(); // 避免除以0
+	//	double t = this->dot(other) / otherLenSq;
+	//	return other * t;
+	//}
+
+	//归一化
 	Vector3 normalized() const {
 		double len = length();
 		if (len < EPS_ABS)  return Vector3();

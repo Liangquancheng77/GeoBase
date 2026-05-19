@@ -86,3 +86,47 @@ AABB Triangle3::getBoundingBox() const{
 	aabb.expand(v2);
 	return aabb;
 }
+
+// 射线-三角形求交（Möller-Trumbore）
+bool Triangle3::intersect(const Ray& ray, double& t, double& u, double& v, bool cullBackface) const {
+	
+	Vector3 A1 = v1 - v0;
+	Vector3 A2 = v2 - v0;
+	Vector3 S = ray.origin - v0;
+	Vector3 Q = ray.direction.cross(A2);
+	Vector3 R = S.cross(A1);
+
+	double det = Q.dot(A1); 
+
+	// 如果不剔除背面，det接近0表示平行或在三角形所在平面上；如果剔除背面，det小于等于0表示平行或背面
+	if ((cullBackface && det < EPS_ABS) || (!cullBackface && std::abs(det) < EPS_ABS)) return false;
+	
+	double invDet = 1.0 / det;
+
+	t = R.dot(A2) * invDet;
+	u = Q.dot(S) * invDet;
+	v = R.dot(ray.direction) * invDet;
+
+	return t >= -EPS_ABS && u >= -EPS_ABS && v >= -EPS_ABS && (u + v) <= 1 + EPS_ABS;
+}
+
+// 带HitInfo的重载版本（通用接口）
+bool Triangle3::intersect(const Ray& ray, HitInfo& info, bool cullBackface) const {
+	double t, u, v;
+	if (!intersect(ray, t, u, v, cullBackface)) {
+		return false;
+	}
+
+	// 给HitInfo赋值
+	info.t = t;
+	info.point = ray.pointAt(t);
+	info.normal = getNormal().normalized();
+
+	// 根据射线方向修正法线朝向，保证法线始终朝向射线入射方向
+	// 这样后面做光照、碰撞响应时，法线方向永远正确，不用额外判断
+	if (ray.direction.dot(info.normal) > 0) {
+		info.normal = Vector3(-info.normal.x, -info.normal.y, -info.normal.z);
+	}
+
+	return true;
+}

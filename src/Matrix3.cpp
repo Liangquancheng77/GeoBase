@@ -270,8 +270,8 @@ EulerAngles Matrix3::toEulerAngles() const {
 
 // 是否是正交矩阵
 bool Matrix3::isOrthogonal() const {
-    Matrix3 trans = transpose();
-    Matrix3 result = trans * *this;
+    //Matrix3 trans = transpose();
+    //Matrix3 result = trans * *this;
     //for (size_t i = 0; i < 3; i++)
     //{
     //    for (size_t j = 0; j < 3; j++)

@@ -68,3 +68,22 @@ bool Plane::intersect(const Ray& ray, double& t, Point3& hitPoint) const {
 	hitPoint = ray.pointAt(t);
 	return true;
 }
+
+// intersect重载
+bool Plane::intersect(const Ray& ray, HitInfo& info) const {
+	double t;
+	Point3 hitPoint;
+	if (!intersect(ray, t, hitPoint)) {
+		return false;
+	}
+
+	info.t = t;
+	info.point = hitPoint;
+	info.normal = normal.normalized();
+
+	// 同样修正法线朝向
+	if (ray.direction.dot(info.normal) > 0) {
+		info.normal = Vector3(-info.normal.x, -info.normal.y, -info.normal.z);
+	}
+	return true;
+}

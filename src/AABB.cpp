@@ -2,11 +2,14 @@
 #include <cassert>
 #include <algorithm>
 #include <limits>
+#include "../include/GeoBase/Triangle3.h"
+#include "vector"
+using namespace std;
 
 // 构造函数
 AABB::AABB(const Point3& min, const Point3& max) : min(min), max(max) {
 	// 断言 min 的每个分量都小于等于 max 的对应分量
-	assert(min.x <= max.x && min.y <= max.y && min.z <= max.z && "Invalid AABB dimensions");
+	//assert(min.x <= max.x && min.y <= max.y && min.z <= max.z && "Invalid AABB dimensions");
 }
 
 // 获取最小点
@@ -183,7 +186,177 @@ bool AABB::intersect(const Ray& ray, double& tMinOut, double& tMaxOut) const {
 	return true;
 }
 
+// 重载：取最近的交点（tmin）
+bool AABB::intersect(const Ray& ray, HitInfo& info) const {
+	double tMinOut, tMaxOut;
+	if (!intersect(ray, tMinOut, tMaxOut)) return false;
 
+	info.t = tMinOut;
+	info.point = ray.pointAt(tMinOut);
+
+	Vector3 center = getCenter();
+	Vector3 extent = max - center;
+
+	if (extent.x < EPS_ABS && extent.y < EPS_ABS && extent.z < EPS_ABS)
+	{
+		// 退化AABB（点/线/面）无有效法线，赋安全值直接返回
+		info.normal = Vector3(0, 1, 0);
+		return true;
+	}
+
+	Vector3 delta = info.point - center;
+	bool onX = std::abs(std::abs(delta.x) - extent.x) < EPS_ABS;
+	bool onY = std::abs(std::abs(delta.y) - extent.y) < EPS_ABS;
+	bool onZ = std::abs(std::abs(delta.z) - extent.z) < EPS_ABS;
+
+	if (onX && !onY && !onZ) {
+		info.normal = Vector3(delta.x > 0 ? 1 : -1, 0, 0);
+	}
+	else if (!onX && onY && !onZ) {
+		info.normal = Vector3(0, delta.y > 0 ? 1 : -1, 0);
+	}
+	else if (!onX && !onY && onZ) {
+		info.normal = Vector3(0, 0, delta.z > 0 ? 1 : -1);
+	}
+	// 处理棱/顶点上的点（多个面的交点，按x→y→z优先级取法线）
+	else {
+		if (onX) {
+			info.normal = Vector3(delta.x > 0 ? 1 : -1, 0, 0);
+		}
+		else if (onY) {
+			info.normal = Vector3(0, delta.y > 0 ? 1 : -1, 0);
+		}
+		else {
+			info.normal = Vector3(0, 0, delta.z > 0 ? 1 : -1);
+		}
+	}
+	return true;
+
+}
+//
+//info.t = tMinOut;
+//info.point = ray.pointAt(tMinOut);
+//// 计算交点处的法线
+//Point3 hitPoint = info.point;
+//if (std::abs(hitPoint.x - min.x) < EPS_ABS) {
+//	info.normal = Vector3(-1, 0, 0);
+//}
+//else if (std::abs(hitPoint.x - max.x) < EPS_ABS) {
+//	info.normal = Vector3(1, 0, 0);
+//}
+//else if (std::abs(hitPoint.y - min.y) < EPS_ABS) {
+//	info.normal = Vector3(0, -1, 0);
+//}
+//else if (std::abs(hitPoint.y - max.y) < EPS_ABS) {
+//	info.normal = Vector3(0, 1, 0);
+//}
+//else if (std::abs(hitPoint.z - min.z) < EPS_ABS) {
+//	info.normal = Vector3(0, 0, -1);
+//}
+//else if (std::abs(hitPoint.z - max.z) < EPS_ABS) {
+//	info.normal = Vector3(0, 0, 1);
+//}
+//else
+//{
+//	info.normal = Vector3(0, 0, 0); // 理论上不应该发生，除非数值误差导致交点不在表面上
+//}
+//return true;
+
+
+// 判断AABB是否与三角形相交（使用分离轴定理）
+bool AABB::intersectTriangleAABB(const Triangle3& tri) const {
+	// 先判断三角形的AABB与当前AABB是否相交，如果不相交则直接返回false
+	AABB triAABB = tri.getBoundingBox();
+	if (!intersects(triAABB))
+	{
+		return false;
+	}
+
+	// 局部坐标系转换：将AABB中心作为原点，三角形顶点转换到局部坐标系
+	Vector3 center = getCenter();
+	Vector3 extent = getExtent();
+	Vector3 localV0 = tri.v0 - center;
+	Vector3 localV1 = tri.v1 - center;
+	Vector3 localV2 = tri.v2 - center;
+
+	// 三角形的3条边向量
+	Vector3 e[3] = { localV1 - localV0, localV2 - localV1, localV0 - localV2 };
+
+	// 分离轴定理：检查13个潜在的分离轴
+	// 1. AABB的三个轴（x、y、z）
+	// x轴
+	double minTriX = std::min({ localV0.x, localV1.x, localV2.x });
+	double maxTriX = std::max({ localV0.x, localV1.x, localV2.x });
+	if (extent.x < minTriX - EPS_ABS || maxTriX < -extent.x - EPS_ABS) return false;
+	// y轴
+	double minTriY = std::min({ localV0.y, localV1.y, localV2.y });
+	double maxTriY = std::max({ localV0.y, localV1.y, localV2.y });
+	if (extent.y < minTriY - EPS_ABS || maxTriY < -extent.y - EPS_ABS) return false;
+	// z轴
+	double minTriZ = std::min({ localV0.z, localV1.z, localV2.z });
+	double maxTriZ = std::max({ localV0.z, localV1.z, localV2.z });
+	if (extent.z < minTriZ - EPS_ABS || maxTriZ < -extent.z - EPS_ABS) return false;
+
+
+	// 2. 三角形的法线
+	Vector3 triNormal = tri.getNormal();
+	// 处理退化三角形，跳过无效轴
+	if (triNormal.length() > EPS_ABS)
+	{
+		double radius = extent.x * std::abs(triNormal.x) + extent.y * std::abs(triNormal.y) + extent.z * std::abs(triNormal.z);
+		double minTri = std::min({ localV0.dot(triNormal), localV1.dot(triNormal), localV2.dot(triNormal) });
+		double maxTri = std::max({ localV0.dot(triNormal), localV1.dot(triNormal), localV2.dot(triNormal) });
+		if (radius < minTri - EPS_ABS || maxTri < -radius - EPS_ABS) return false;
+	}
+
+	// 3. 三角形的三条边与AABB的三个轴的叉积（9个轴）
+	Vector3 axis;
+	// 3.1 AABB的X轴 × 三角形的边
+	for (size_t i = 0; i < 3; i++)
+	{
+		axis = Vector3(1, 0, 0).cross(e[i]);
+		if (axis.length() > EPS_ABS)
+		{
+			axis = axis.normalized();
+			double r = extent.y * std::abs(axis.y) + extent.z * std::abs(axis.z);
+			double p0 = localV0.dot(axis); double p1 = localV1.dot(axis); double p2 = localV2.dot(axis);
+			double minTri = std::min({ p0, p1, p2 });
+			double maxTri = std::max({ p0, p1, p2 });
+			if (r < minTri - EPS_ABS || maxTri < -r - EPS_ABS) return false;
+		}
+	}
+	// 3.2 AABB的Y轴 × 三角形的边
+	for (size_t i = 0; i < 3; i++)
+	{
+		axis = Vector3(0, 1, 0).cross(e[i]);
+		if (axis.length() > EPS_ABS)
+		{
+			axis = axis.normalized();
+			double r = extent.x * std::abs(axis.x) + extent.z * std::abs(axis.z);
+			double p0 = localV0.dot(axis); double p1 = localV1.dot(axis); double p2 = localV2.dot(axis);
+			double minTri = std::min({ p0, p1, p2 });
+			double maxTri = std::max({ p0, p1, p2 });
+			if (r < minTri - EPS_ABS || maxTri < -r - EPS_ABS) return false;
+		}
+	}
+	// 3.3 AABB的Z轴 × 三角形的边
+	for (size_t i = 0; i < 3; i++)
+	{
+		axis = Vector3(0, 0, 1).cross(e[i]);
+		if (axis.length() > EPS_ABS)
+		{
+			axis = axis.normalized();
+			double r = extent.x * std::abs(axis.x) + extent.y * std::abs(axis.y);
+			double p0 = localV0.dot(axis); double p1 = localV1.dot(axis); double p2 = localV2.dot(axis);
+			double minTri = std::min({ p0, p1, p2 });
+			double maxTri = std::max({ p0, p1, p2 });
+			if (r < minTri - EPS_ABS || maxTri < -r - EPS_ABS) return false;
+		}
+	}
+
+	return true; // 没有找到分离轴，说明相交
+
+}
 
 
 

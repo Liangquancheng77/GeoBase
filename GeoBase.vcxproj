@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="include\GeoBase\AABB.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
+    <ClInclude Include="include\GeoBase\GeometryCommon.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />
     <ClInclude Include="include\GeoBase\Matrix4.h" />
     <ClInclude Include="include\GeoBase\Plane.h" />

@@ -71,7 +71,7 @@ struct EulerAngles {
     }
 
     //判断是否接近万向锁
-    bool isGimbalLocked(double eps=1e-6) {
+    bool isGimbalLocked(double eps=EPS_REL) {
         return fabs(fabs(pitch) - PI / 2) < eps;
     }
 };

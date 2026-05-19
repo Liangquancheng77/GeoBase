@@ -1,6 +1,7 @@
 #pragma once
 #include "Vector3.h"
 #include "Ray.h"
+#include "GeometryCommon.h"
 
 enum class PlaneSide
 {
@@ -40,5 +41,8 @@ struct Plane
 
 	// 判断射线是否与平面相交，返回交点参数t和交点坐标
     bool intersect(const Ray& ray, double& t, Point3& hitPoint) const;
+
+    // intersect重载
+    bool intersect(const Ray& ray, HitInfo& info) const;
 
 };

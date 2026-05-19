@@ -2,7 +2,8 @@
 #include "../include/GeoBase/Ray.h"
 #include "../include/GeoBase/Plane.h"
 #include "../include/GeoBase/AABB.h"
-
+#include "../include/GeoBase/Triangle3.h"
+using namespace std;
 
 // 构造函数零向量测试
 TEST(RayTest, ZeroDirection) {
@@ -165,4 +166,126 @@ TEST(RayTest, RayTest10) {
 	AABB box(Point3(-2, -2, -2), Point3(5, 5, 5));
 	double tMin, tMax;
 	EXPECT_TRUE(box.intersect(ray, tMin, tMax));
+}
+
+TEST(RayTest, RayTriangleIntersect) {
+
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 1), Vector3(0, 0, -1));
+	double t, u, v;
+	EXPECT_TRUE(triangle.intersect(ray, t, u, v, false));
+	EXPECT_DOUBLE_EQ(t, 1.0);
+	EXPECT_DOUBLE_EQ(u, 0.5);
+	EXPECT_DOUBLE_EQ(v, 0.5);
+
+}
+
+// 射线与三角形求交测试(起点在三角形内):射线起点 (1,1,0)，方向 (0,0,-1)，三角形顶点 (0,0,0), (2,0,0), (0,2,0)，验证 t=0，u=0.5，v=0.5
+TEST(RayTest, RayTriangleIntersectInside) {
+
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 0), Vector3(0, 0, -1));
+	double t, u, v;
+	EXPECT_TRUE(triangle.intersect(ray, t, u, v, false));
+	EXPECT_DOUBLE_EQ(t, 0.0);
+	EXPECT_DOUBLE_EQ(u, 0.5);
+	EXPECT_DOUBLE_EQ(v, 0.5);
+
+}
+
+// 射线与三角形求交测试(起点在三角形顶点处):射线起点 (2,0,0)，方向 (0,0,-1)，三角形顶点 (0,0,0), (2,0,0), (0,2,0)，验证 t=0，u=1.0，v=0
+TEST(RayTest, RayTriangleIntersectVertex) {
+
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(2, 0, 0), Vector3(0, 0, -1));
+	double t, u, v;
+	EXPECT_TRUE(triangle.intersect(ray, t, u, v, false));
+	EXPECT_DOUBLE_EQ(t, 0.0);
+	EXPECT_DOUBLE_EQ(u, 1.0);
+	EXPECT_DOUBLE_EQ(v, 0.0);
+
+}
+
+// 随机100个三角形和射线，验证计算出的交点满足 triangle.contains(hitPoint) == true
+TEST(RayTest, RayTest11) {
+	std::srand(static_cast<unsigned int>(std::time(nullptr)));
+	for (int i = 0; i < 100; ++i) {
+		Triangle3 triangle(
+			Point3(
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50
+			),
+			Point3(
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50
+			),
+			Point3(
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50,
+				std::rand() % 100 - 50
+			));
+		// 确保三角形不退化
+		if (triangle.getArea() <= EPS_ABS)
+		{
+			continue;
+		}
+
+		Ray ray(Point3(
+			std::rand() % 100 - 50,
+			std::rand() % 100 - 50,
+			std::rand() % 100 - 50
+		), Vector3(
+			std::rand() % 100 - 50,
+			std::rand() % 100 - 50,
+			std::rand() % 100 - 50
+		));
+		// 确保射线方向不为零
+		if (ray.direction.length() <= EPS_ABS)
+		{
+			continue;
+		}
+
+		double t, u, v;
+
+		if (triangle.intersect(ray, t, u, v, false)) {
+			//cout << "Ray-Triangle Intersection Found: t=" << t << ", u=" << u << ", v=" << v << endl;
+			Point3 hitPoint = ray.pointAt(t);
+			EXPECT_TRUE(triangle.contains(hitPoint));
+		}
+
+	}
+}
+
+// 射线与三角形求交测试(背面剔除):射线起点 (1,1,1)，方向 (0,0,1)，三角形顶点 (0,0,0), (2,0,0), (0,2,0)，验证返回 false（背面剔除）
+TEST(RayTest, RayTriangleIntersectBackfaceCulling) {
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 1), Vector3(0, 0, 1));
+	double t, u, v;
+	EXPECT_FALSE(triangle.intersect(ray, t, u, v, true));
+}
+
+// 退化测试（三角形三点共线）：射线起点 (1,1,1)，方向 (0,0,-1)，三角形顶点 (3,-1,0), (2,0,0), (0,2,0)（退化成一条线段），验证返回 false
+TEST(RayTest, RayTriangleIntersectDegenerate) {
+	Triangle3 triangle(Point3(3, -1, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 1), Vector3(0, 0, -1));
+	double t, u, v;
+	EXPECT_FALSE(triangle.intersect(ray, t, u, v, false));
+}
+
+// 退化测试（射线与三角形平面平行）：射线起点 (1,1,1)，方向 (0,2,0)，三角形顶点 (0,0,0), (2,0,0), (0,2,0)，验证返回 false
+TEST(RayTest, RayTest12) {
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 1), Vector3(0, 2, 0));
+	double t, u, v;
+	EXPECT_FALSE(triangle.intersect(ray, t, u, v, false));
+}
+
+// 退化测试（射线与三角形平面重合）：射线起点 (1,1,0)，方向 (0,2,0)，三角形顶点 (0,0,0), (2,0,0), (0,2,0)，验证返回 false
+TEST(RayTest, RayTest13) {
+	Triangle3 triangle(Point3(0, 0, 0), Point3(2, 0, 0), Point3(0, 2, 0));
+	Ray ray(Point3(1, 1, 0), Vector3(0, 2, 0));
+	double t, u, v;
+	EXPECT_FALSE(triangle.intersect(ray, t, u, v, false));
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Vector3.h"
 #include "AABB.h"
+#include "GeometryCommon.h"
 
 struct Triangle3
 {
@@ -10,6 +11,8 @@ struct Triangle3
 
 	// 构造函数
 	Triangle3(const Point3& v0, const Point3& v1, const Point3& v2);
+
+	Triangle3() : v0(0, 0, 0), v1(0, 0, 0), v2(0, 0, 0) {}
 
 	// 访问三角形的顶点
 	Point3 getVertex(int index) const;
@@ -32,6 +35,11 @@ struct Triangle3
 	// 获取三角形的轴对齐包围盒（AABB）
 	AABB getBoundingBox() const;
 
+	// 射线-三角形求交（Möller-Trumbore）
+	bool intersect(const Ray& ray, double& t, double& u, double& v, bool cullBackface = false) const;
+
+	// 带HitInfo的重载版本（通用接口）
+	bool intersect(const Ray& ray, HitInfo& info, bool cullBackface = false) const;
 
 };
 

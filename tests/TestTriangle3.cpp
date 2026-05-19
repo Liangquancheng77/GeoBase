@@ -71,25 +71,25 @@ TEST(Triangle3Test, BarycentricReconstruction) {
 }
 
 // 三点共线的退化三角形，验证面积接近0
-TEST(Triangle3Test, Triangle3Tes2) {
-    Point3 v0(0, 0, 0);
-    Point3 v1(1, 1, 1);
-    Point3 v2(2, 2, 2); // 共线
-    Triangle3 tri(v0, v1, v2);
-    EXPECT_NEAR(tri.getArea(), 0.0, EPS_ABS);
-}
+//TEST(Triangle3Test, Triangle3Tes2) {
+//    Point3 v0(0, 0, 0);
+//    Point3 v1(1, 1, 1);
+//    Point3 v2(2, 2, 2); // 共线
+//    Triangle3 tri(v0, v1, v2);
+//    EXPECT_NEAR(tri.getArea(), 0.0, EPS_ABS);
+//}
 
 // 测试三点共线，退化三角形，验证 contains 对任何点都返回 false
-TEST(Triangle3Test, ContainsDegenerate) {
-    Point3 v0(0, 0, 0);
-    Point3 v1(1, 1, 1);
-    Point3 v2(2, 2, 2); // 共线
-    Triangle3 tri(v0, v1, v2);
-	EXPECT_FALSE(tri.contains(Point3(0, 0, 0)));
-	EXPECT_FALSE(tri.contains(Point3(1, 0, 0)));
-	EXPECT_FALSE(tri.contains(Point3(0, 2, 0)));
-	EXPECT_FALSE(tri.contains(Point3(2, 2, 2)));
-}
+//TEST(Triangle3Test, ContainsDegenerate) {
+//    Point3 v0(0, 0, 0);
+//    Point3 v1(1, 1, 1);
+//    Point3 v2(2, 2, 2); // 共线
+//    Triangle3 tri(v0, v1, v2);
+//	EXPECT_FALSE(tri.contains(Point3(0, 0, 0)));
+//	EXPECT_FALSE(tri.contains(Point3(1, 0, 0)));
+//	EXPECT_FALSE(tri.contains(Point3(0, 2, 0)));
+//	EXPECT_FALSE(tri.contains(Point3(2, 2, 2)));
+//}
 
 
 

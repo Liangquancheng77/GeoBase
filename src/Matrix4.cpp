@@ -298,7 +298,7 @@ EulerAngles Matrix4::toEulerAngles() const {
 	// 计算俯仰角pitch的余弦值
 	double cos_pitch = sqrt(m00 * m00 + m10 * m10);
 	// 判断是否进入万向锁（余弦值接近0）
-	bool is_gimbal_lock = cos_pitch < 1e-6;
+	bool is_gimbal_lock = cos_pitch < EPS_REL;
 
 	if (!is_gimbal_lock) {
 		// 正常情况：非万向锁

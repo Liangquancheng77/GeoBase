@@ -2,6 +2,9 @@
 #include "Vector3.h"
 #include "Matrix4.h"
 #include "Ray.h"
+#include "GeometryCommon.h"
+
+struct Triangle3;
 
 struct AABB
 {
@@ -42,5 +45,11 @@ struct AABB
 
 	// 射线与AABB求交，返回是否相交以及交点参数tMinOut和tMaxOut
 	bool intersect(const Ray& ray, double& tMinOut, double& tMaxOut) const;
+
+	// 重载：取最近的交点（tmin）
+	bool intersect(const Ray& ray, HitInfo& info) const;
+
+	// 判断AABB是否与三角形相交（使用分离轴定理）
+	bool intersectTriangleAABB(const Triangle3& tri) const;
 
 };

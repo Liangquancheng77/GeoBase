@@ -125,5 +125,8 @@
     <ClInclude Include="include\GeoBase\Ray.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
+    <ClInclude Include="include\GeoBase\GeometryCommon.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
