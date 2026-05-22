@@ -9,17 +9,74 @@
 #include <limits>
 #include <optional>  // 新增：用于std::optional，避免Triangle3默认构造问题
 #include <cmath>
+#include "../include/GeoBase/BVH.h"
+//#include <Windows.h> 
 
 
 // ====================== 一键切换模式 ======================
-#define RUN_TESTS        // 运行单元测试
+//#define RUN_TESTS        // 运行单元测试
  //#define RUN_VISUAL_CUBE  // 运行正方体可视化
 // #define RUN_VISUAL_PLANE // 运行平面可视化
  //#define RUN_VISUAL_AABB // 运行AABB可视化
  //#define RUN_VISUAL_TRIANGLES // 运行三角形可视化
 //#define RUN_VISUAL_AABB_RAY // AABB射线求交可视化
 //#define RUN_VISUAL_PICK   // 运行三角形鼠标拾取
+#define RUN_BVH_COLLISION  // 开启BVH双模型碰撞检测
 // ==========================================================
+
+
+// ====================== 新增：BVH双模型碰撞检测测试 ======================
+void testBVHCollision() {
+    std::cout << "========== Starting BVH Collision Test ==========" << std::endl;
+
+    // 1. 定义两个OBJ模型路径（把模型放在exe同目录下）
+    const std::string modelPath1 = "cube.obj";   // 立方体模型
+    const std::string modelPath2 = "sphere.obj"; // 球体模型
+
+    // 2. 加载OBJ模型
+    std::vector<Triangle3> model1, model2;
+    if (!loadOBJ(modelPath1, model1)) {
+        std::cerr << "Error: Failed to load model 1" << std::endl;
+        return;
+    }
+    if (!loadOBJ(modelPath2, model2)) {
+        std::cerr << "Error: Failed to load model 2" << std::endl;
+        return;
+    }
+
+    std::cout << "Model 1 Triangle count: " << model1.size() << std::endl;
+    std::cout << "Model 2 Triangle count: " << model2.size() << std::endl;
+
+    // 3. 为两个模型构建 桶式SAH-BVH
+    std::cout << "Building BVH trees..." << std::endl;
+    BVHNode* bvh1 = buildBVH_Bucket_SAH(model1, 0, model1.size(), 0);
+    BVHNode* bvh2 = buildBVH_Bucket_SAH(model2, 0, model2.size(), 0);
+
+    // 4. 执行双BVH碰撞检测
+    std::vector<std::pair<int, int>> collisionPairs;
+    std::cout << "Detecting intersecting triangle pairs..." << std::endl;
+    collideBVH(bvh1, bvh2, model1, model2, collisionPairs);
+
+    // 5. 输出结果
+    std::cout << "\n========== Detection Completed ==========" << std::endl;
+    std::cout << "Found " << collisionPairs.size() << " intersecting triangle pairs" << std::endl;
+
+    // 打印前10对结果（避免太多）
+    int printCount = std::min(10, (int)collisionPairs.size());
+    for (int i = 0; i < printCount; i++) {
+        auto& pair = collisionPairs[i];
+        std::cout << "Model1 Triangle[" << pair.first << "] <-> Model2 Triangle[" << pair.second << "] intersecting" << std::endl;
+    }
+    if (collisionPairs.size() > 10) {
+        std::cout << "... and " << collisionPairs.size() - 10 << " more pairs omitted" << std::endl;
+    }
+
+    // 6. 释放BVH内存（必须加！）
+    deleteBVH(bvh1);
+    deleteBVH(bvh2);
+
+    std::cout << "\n========== Test Finished ==========" << std::endl;
+}
 
 // 获取相机真实位置（轨道相机的eye坐标）
 Point3 getCameraEye(const Viewer& viewer) {
@@ -431,6 +488,12 @@ void pointAABB() {
 
 // 唯一的主函数（已添加RUN_VISUAL_PICK分支）
 int main(int argc, char** argv) {
+
+    // 强制控制台使用 UTF-8 编码
+    //SetConsoleOutputCP(CP_UTF8);
+    //SetConsoleCP(CP_UTF8); // 输入也用UTF-8（可选）
+    //system("chcp 65001 > nul"); // 静默执行chcp命令，避免输出额外文字
+
 #ifdef RUN_TESTS
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
@@ -449,8 +512,11 @@ int main(int argc, char** argv) {
 #elif defined(RUN_VISUAL_AABB_RAY)
     visualAABBRay();
     return 0;
-#elif defined(RUN_VISUAL_PICK) // 新增：三角形拾取模式分支
+#elif defined(RUN_VISUAL_PICK)
     visualPick();
+    return 0;
+#elif defined(RUN_BVH_COLLISION)
+    testBVHCollision();
     return 0;
 #else
     return 0;

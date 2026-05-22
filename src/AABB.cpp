@@ -52,6 +52,18 @@ void AABB::merge(const AABB& other) {
 	max.z = std::max(max.z, other.max.z);
 }
 
+// 合并两个AABB
+AABB AABB::merge(const AABB& one, const AABB& other) {
+	AABB result;
+	result.min.x = std::min(one.min.x, other.min.x);
+	result.min.y = std::min(one.min.y, other.min.y);
+	result.min.z = std::min(one.min.z, other.min.z);
+	result.max.x = std::max(one.max.x, other.max.x);
+	result.max.y = std::max(one.max.y, other.max.y);
+	result.max.z = std::max(one.max.z, other.max.z);
+	return result;
+}
+
 // 判断一个点是否在AABB内部
 bool AABB::contains(const Point3& point) const {
 	return (point.x >= min.x - EPS_ABS && point.x <= max.x + EPS_ABS &&

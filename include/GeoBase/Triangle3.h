@@ -36,10 +36,19 @@ struct Triangle3
 	AABB getBoundingBox() const;
 
 	// 射线-三角形求交（Möller-Trumbore）
-	bool intersect(const Ray& ray, double& t, double& u, double& v, bool cullBackface = false) const;
+	bool intersect(const Ray& ray, double& t, double& u, double& v, bool cullBackface = true) const;
 
 	// 带HitInfo的重载版本（通用接口）
 	bool intersect(const Ray& ray, HitInfo& info, bool cullBackface = false) const;
+
+	// 判断与另一个三角形是否相交（使用分离轴SAT定理）
+	bool intersect_sat(const Triangle3& other) const;
+
+	//// 判断与另一个三角形是否相交（效率更高的实现）
+	//bool triTriIntersect(const Triangle3& other) const;
+
+	//// 判断与另一个三角形是否相交（使用分离轴SAT定理）并返回两个交点（如果有）
+	//bool intersect_sat(const Triangle3& other, Point3& intersectionPoint1, Point3& intersectionPoint2) const;
 
 };
 

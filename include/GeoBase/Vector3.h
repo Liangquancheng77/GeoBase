@@ -46,9 +46,14 @@ struct Vector3 {
 		);
 	}
 
+	// 向量长度的平方，避免开方运算
+	double lengthSquared() const {
+		return x * x + y * y + z * z;
+	}
+
 	//向量长度（模）
 	double length() const {
-		return std::sqrt(x * x + y * y + z * z);
+		return std::sqrt(lengthSquared());
 	}
 
 	//// 点在向量上的投影

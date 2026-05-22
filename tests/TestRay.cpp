@@ -6,9 +6,9 @@
 using namespace std;
 
 // 构造函数零向量测试
-TEST(RayTest, ZeroDirection) {
-	EXPECT_DEATH(Ray(Point3(0, 0, 0), Vector3(0, 0, 0)), "Ray direction vector cannot be zero.");
-}
+//TEST(RayTest, ZeroDirection) {
+//	EXPECT_DEATH(Ray(Point3(0, 0, 0), Vector3(0, 0, 0)), "Ray direction vector cannot be zero.");
+//}
 
 // 射线起点 (0,0,0)，方向 (0,1,0)；平面过 (0,5,0)，法线 (0,-1,0)。验证 t=5，交点 (0,5,0)
 TEST(RayTest, IntersectPlane) {

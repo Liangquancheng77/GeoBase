@@ -11,6 +11,11 @@ struct AABB
 	Point3 min; // 包围盒最小点
 	Point3 max; // 包围盒最大点
 
+	// 默认构造：创建一个无效的AABB（min初始化为最大值，max初始化为最小值）
+	AABB() : min(std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max()),
+		max(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest()) {
+	}
+
 	// 构造函数
 	AABB(const Point3& min, const Point3& max);
 
@@ -33,6 +38,8 @@ struct AABB
 	// 合并另一个AABB
     // 将当前AABB扩展为包含自身和另一个AABB的并集
 	void merge(const AABB& other);
+
+	static AABB merge(const AABB& one, const AABB& other);
 
 	// 判断一个点是否在AABB内部
 	bool contains(const Point3& point) const;

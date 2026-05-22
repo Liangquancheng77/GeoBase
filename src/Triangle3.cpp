@@ -130,3 +130,121 @@ bool Triangle3::intersect(const Ray& ray, HitInfo& info, bool cullBackface) cons
 
 	return true;
 }
+
+// 判断两个三角形在向量的投影上是否分离（辅助函数）
+inline bool isSeparated(const Triangle3& tri1, const Triangle3& tri2, const Vector3& axis) {
+	double min1 = std::numeric_limits<double>::infinity();
+	double max1 = -std::numeric_limits<double>::infinity();
+	double min2 = std::numeric_limits<double>::infinity();
+	double max2 = -std::numeric_limits<double>::infinity();
+	for (int i = 0; i < 3; i++) {
+		double proj1 = axis.dot(tri1.getVertex(i));
+		min1 = std::min(min1, proj1);
+		max1 = std::max(max1, proj1);
+		double proj2 = axis.dot(tri2.getVertex(i));
+		min2 = std::min(min2, proj2);
+		max2 = std::max(max2, proj2);
+	}
+	return max1 < min2 - EPS_ABS || max2 < min1 - EPS_ABS;
+}
+
+// 判断与另一个三角形是否相交（使用分离轴定理）
+bool Triangle3::intersect_sat(const Triangle3& other) const {
+	// 1.获取两个三角形的法线
+	Vector3 n1 = getNormal();
+	Vector3 n2 = other.getNormal();
+
+	// 2. 检查前两个分离轴：两个三角形的法线
+	if (isSeparated(*this, other, n1)) return false;
+	if (isSeparated(*this, other, n2)) return false;
+
+	// 3. 处理共面情况（法线平行）
+	if (std::abs(n1.dot(n2)) > 1.0 - EPS_ABS) {
+		// 共面时，检查平面内的边法向量轴（共6个）
+		Vector3 edges1[3] = {
+			v1 - v0,
+			v2 - v1,
+			v0 - v2
+		};
+		Vector3 edges2[3] = {
+			other.v1 - other.v0,
+			other.v2 - other.v1,
+			other.v0 - other.v2
+		};
+
+		// 检查本三角形的边法向量轴
+		for (int i = 0; i < 3; i++) {
+			Vector3 axis = edges1[i].cross(n1);
+			if (axis.lengthSquared() > EPS_ABS * EPS_ABS) {
+				if (isSeparated(*this, other, axis)) {
+					return false;
+				}
+			}
+		}
+
+		// 检查另一个三角形的边法向量轴
+		for (int i = 0; i < 3; i++) {
+			Vector3 axis = edges2[i].cross(n1);
+			if (axis.lengthSquared() > EPS_ABS * EPS_ABS) {
+				if (isSeparated(*this, other, axis)) {
+					return false;
+				}
+			}
+		}
+
+		// 所有共面轴都不分离，相交
+		return true;
+	}
+	// 4.如果法线不平行，三角形所在平面必定相交，使用分离轴定理（SAT）检查是否分离
+
+	Vector3 edges1[3] = { v1 - v0, v2 - v1, v0 - v2 };
+	Vector3 edges2[3] = { other.v1 - other.v0, other.v2 - other.v1, other.v0 - other.v2 };
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			Vector3 axis = edges1[i].cross(edges2[j]);
+			if (axis.lengthSquared() > EPS_ABS * EPS_ABS) { // 只有非零轴才有意义
+				if (isSeparated(*this, other, axis)) return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+//// 判断与另一个三角形是否相交（效率更高的实现）
+//bool Triangle3::triTriIntersect(const Triangle3& other) const {
+//	// 1.获取两个三角形的法线
+//	Vector3 n1 = getNormal();
+//	Vector3 n2 = other.getNormal();
+//
+//	// 2.如果法线平行，三角形所在平面可能重叠或分离，先检查是否共面
+//	if (std::abs(n1.dot(n2)) > 1.0 - EPS_ABS) {
+//		// 共面：检查一个三角形的顶点是否在另一个三角形内
+//		return contains(other.v0) || contains(other.v1) || contains(other.v2) ||
+//			other.contains(v0) || other.contains(v1) || other.contains(v2);
+//	}
+//	// 3.一个三角形的三个顶点到另一个三角形所在平面的距离符号必须不全相同，否则必定分离
+//	double d0 = n2.dot(v0 - other.v0);
+//	double d1 = n2.dot(v1 - other.v0);
+//	double d2 = n2.dot(v2 - other.v0);
+//	if ((d0 > -EPS_ABS && d1 > -EPS_ABS && d2 > -EPS_ABS) || (d0 < EPS_ABS && d1 < EPS_ABS && d2 < EPS_ABS)) return false;
+//	// 同理，另一个三角形的三个顶点到第一个三角形所在平面的距离符号也必须不全相同，否则必定分离
+//	double d3 = n1.dot(other.v0 - v0);
+//	double d4 = n1.dot(other.v1 - v0);
+//	double d5 = n1.dot(other.v2 - v0);
+//	if ((d3 > -EPS_ABS && d4 > -EPS_ABS && d5 > -EPS_ABS) || (d3 < EPS_ABS && d4 < EPS_ABS && d5 < EPS_ABS)) return false;
+//
+//	// 4.如果法线不平行，三角形所在平面必定相交，求出交线段所在的直线的方向单位向量
+//	Vector3 lineDir = n1.cross(n2).normalized();
+//	// 5.将两个三角形投影到交线段所在的直线上，得到两个线段，检查这两个线段是否重叠
+//	return !isSeparated(*this, other, lineDir);
+//
+//}
+//
+//// 判断与另一个三角形是否相交（使用分离轴定理）并返回两个交点（如果有）
+//bool Triangle3::intersect_sat(const Triangle3& other, Point3& intersectionPoint1, Point3& intersectionPoint2) const {
+//	// 目前实现了是否相交的判断，返回交点需要更复杂的计算，暂时留空
+//	intersectionPoint1 = Point3(0, 0, 0);
+//	intersectionPoint2 = Point3(0, 0, 0);
+//	return intersect_sat(other);
+//}
