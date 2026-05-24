@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\BVH.cpp" />
+    <ClCompile Include="src\HEMesh.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Matrix3.cpp" />
     <ClCompile Include="src\Matrix4.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="src\Triangle3.cpp" />
     <ClCompile Include="tests\TestAABB.cpp" />
     <ClCompile Include="tests\TestBVH.cpp" />
+    <ClCompile Include="tests\TestHEMesh.cpp" />
     <ClCompile Include="tests\TestMatrix3.cpp" />
     <ClCompile Include="tests\TestMatrix4.cpp" />
     <ClCompile Include="tests\TestPlane.cpp" />
@@ -156,6 +158,7 @@
     <ClInclude Include="include\GeoBase\BVH.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
     <ClInclude Include="include\GeoBase\GeometryCommon.h" />
+    <ClInclude Include="include\GeoBase\HEMesh.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />
     <ClInclude Include="include\GeoBase\Matrix4.h" />
     <ClInclude Include="include\GeoBase\Plane.h" />

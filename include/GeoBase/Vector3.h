@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include "Common.h"
+#include <ostream>
 
 struct Vector3 {
 
@@ -71,7 +72,15 @@ struct Vector3 {
 		return *this / len;
 	}
 
+
+
 };
+
+// 正确：全局重载 <<
+inline std::ostream& operator<<(std::ostream& os, const Vector3& v) {
+	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+	return os;
+}
 
 using Point3 = Vector3;
 

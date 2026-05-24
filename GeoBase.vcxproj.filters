@@ -28,6 +28,18 @@
     <Filter Include="源文件\Math">
       <UniqueIdentifier>{da3c284e-4c6b-48ed-b098-866bb65b4647}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Acceleration">
+      <UniqueIdentifier>{3f9f4308-3634-4389-af1d-c4b739ef8c31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Mesh">
+      <UniqueIdentifier>{a408e550-c93f-454b-ab69-dc243fbf7828}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Mesh">
+      <UniqueIdentifier>{fe0eff55-d0aa-4efb-934a-e63c19d0aa5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Acceleration">
+      <UniqueIdentifier>{3dca02cb-ce20-4e07-88c3-4c6bc8d3b9d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tests\TestMatrix3.cpp">
@@ -87,10 +99,16 @@
     <ClCompile Include="tests\TestRay.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="src\BVH.cpp">
-      <Filter>源文件\Math</Filter>
-    </ClCompile>
     <ClCompile Include="tests\TestBVH.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BVH.cpp">
+      <Filter>源文件\Acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HEMesh.cpp">
+      <Filter>源文件\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestHEMesh.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -135,7 +153,10 @@
       <Filter>头文件\Math</Filter>
     </ClInclude>
     <ClInclude Include="include\GeoBase\BVH.h">
-      <Filter>头文件\Math</Filter>
+      <Filter>头文件\Acceleration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\HEMesh.h">
+      <Filter>头文件\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

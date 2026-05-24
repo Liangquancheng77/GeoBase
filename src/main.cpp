@@ -7,25 +7,25 @@
 #include <iostream>
 #include <vector>
 #include <limits>
-#include <optional>  // 新增：用于std::optional，避免Triangle3默认构造问题
+#include <optional>  // 用于std::optional，避免Triangle3默认构造问题
 #include <cmath>
 #include "../include/GeoBase/BVH.h"
 //#include <Windows.h> 
 
 
 // ====================== 一键切换模式 ======================
-//#define RUN_TESTS        // 运行单元测试
+#define RUN_TESTS        // 运行单元测试
  //#define RUN_VISUAL_CUBE  // 运行正方体可视化
 // #define RUN_VISUAL_PLANE // 运行平面可视化
  //#define RUN_VISUAL_AABB // 运行AABB可视化
  //#define RUN_VISUAL_TRIANGLES // 运行三角形可视化
 //#define RUN_VISUAL_AABB_RAY // AABB射线求交可视化
 //#define RUN_VISUAL_PICK   // 运行三角形鼠标拾取
-#define RUN_BVH_COLLISION  // 开启BVH双模型碰撞检测
+//#define RUN_BVH_COLLISION  // 开启BVH双模型碰撞检测
 // ==========================================================
 
 
-// ====================== 新增：BVH双模型碰撞检测测试 ======================
+// ====================== BVH双模型碰撞检测测试 ======================
 void testBVHCollision() {
     std::cout << "========== Starting BVH Collision Test ==========" << std::endl;
 
