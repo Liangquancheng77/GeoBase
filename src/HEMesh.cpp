@@ -323,3 +323,64 @@ bool HEMesh::validate() const {
 	// 全部通过
 	return true;
 }
+
+
+// 边翻转
+bool HEMesh::flipEdge(HEHalfEdge* he) {
+	HEHalfEdge* pair = he->pair;
+	HEFace* f1 = he->face;
+	HEFace* f2 = pair->face;
+	// 判断两个半边是否都是内部边
+	if (f1 == nullptr || f2 == nullptr) return false;
+	// 判断两个是否都是三角形
+	HEHalfEdge* AB = he->next;
+	if (AB == nullptr) return false;
+	HEHalfEdge* BC = AB->next;
+	if (BC == nullptr || BC->next != he) return false;
+	HEHalfEdge* CD = pair->next;
+	if (CD == nullptr) return false;
+	HEHalfEdge* DA = CD->next;
+	if (DA == nullptr || DA->next != pair) return false;
+
+	HEVert* A = AB->vertex;
+	HEVert* B = BC->vertex;
+	HEVert* C = he->vertex;
+	HEVert* D = DA->vertex;
+
+	// 判断两个三角形合并后是否是凸四边形
+    // A、C是否在BD两侧
+	Vector3 crossA_BD = Vector3(D->position - B->position).cross(A->position - B->position);
+	Vector3 crossC_BD = Vector3(D->position - B->position).cross(C->position - B->position);
+	// 大于0表示同侧，等于0表示四边形退化为大三角形
+	if (crossA_BD.dot(crossC_BD) >= -EPS_ABS) return false;
+	// B、D是否在AC两侧
+	Vector3 crossB_AC = Vector3(C->position - A->position).cross(B->position - A->position);
+	Vector3 crossD_AC = Vector3(C->position - A->position).cross(D->position - A->position);
+	if (crossB_AC.dot(crossD_AC) >= -EPS_ABS) return false;
+
+	// A、C的半边可能是内边，避免出错所以需要更新
+	A->edge = AB;
+	C->edge = CD;
+
+	// 两个面的半边避免出错也要更新
+	f1->edge = he;
+	f2->edge = pair;
+
+	// 两个对角线的内边：起点改变、pair不变、next改变、face不变
+	he->vertex = D;
+	he->next = BC;
+	pair->vertex = B;
+	pair->next = DA;
+
+	// AB、CD：起点不变、pair不变、next改变、face改变
+	AB->next = pair;
+	AB->face = f2;
+	CD->next = he;
+	CD->face = f1;
+
+	// BC、DA：起点不变、pair不变、next改变、face不变
+	BC->next = CD;
+	DA->next = AB;
+	return true;
+
+}

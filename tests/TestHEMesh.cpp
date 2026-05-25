@@ -186,3 +186,54 @@ TEST(TestHEMesh, TestHEMesh11) {
 	mesh.addTriangle(Point3(0, 1.0, 0), Point3(1.0, 0, 0), Point3(0, 0, 1.0));
 	EXPECT_THROW(mesh.addTriangle(Point3(0, 1.0, 0), Point3(1.0, 0, 0), Point3(0, 0, 2.0)), std::runtime_error);
 }
+
+// =============================边翻转==============================
+// 创建一个由两个三角形组成的四边形，执行翻转，验证翻转后仍有两个三角形，对角线顶点变化
+TEST(TestHEMesh, TestHEMesh12) {
+	HEMesh mesh;
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 0, 1.0), Point3(0, 1.0, 0));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[0]));
+	cout << "--------------------------------------------" << endl;
+}
+
+// 连续翻转两次，验证回到原始状态
+// 创建一个由两个三角形组成的四边形，执行翻转，验证翻转后仍有两个三角形，对角线顶点变化
+TEST(TestHEMesh, TestHEMesh13) {
+	HEMesh mesh;
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 0, 1.0), Point3(0, 1.0, 0));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[0]));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[0]));
+	cout << "--------------------------------------------" << endl;
+}
+
+// 对立方体随机执行多次翻转，每次翻转后调用validate验证网格完整性
+TEST(TestHEMesh, TestHEMesh14) {
+	HEMesh mesh;
+	mesh.loadOBJ("cube.obj");
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[4]));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[11]));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[11]));
+	EXPECT_TRUE(mesh.flipEdge(mesh.getHalfEdges()[10]));
+	EXPECT_TRUE(mesh.validate());
+	
+}
+
+// 尝试翻转边界边（pair为空），验证返回false
+TEST(TestHEMesh, TestHEMesh15) {
+	HEMesh mesh;
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 0, 1.0), Point3(0, 1.0, 0));
+	EXPECT_FALSE(mesh.flipEdge(mesh.getHalfEdges()[2]));
+	cout << "--------------------------------------------" << endl;
+}
+
+ // 退化三角形，翻转失败
+TEST(TestHEMesh, TestHEMesh16) {
+	HEMesh mesh;
+	mesh.addTriangle(Point3(0, 0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+	mesh.addTriangle(Point3(0, 0, 0), Point3(0, 0, 1.0), Point3(0, 1.0, 0));
+	EXPECT_FALSE(mesh.flipEdge(mesh.getHalfEdges()[0]));
+
+}

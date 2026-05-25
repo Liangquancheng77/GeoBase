@@ -110,6 +110,9 @@ public:
 	// 网格完整性验证
 	bool validate() const;
 
+	// 边翻转
+	bool flipEdge(HEHalfEdge* he);
+
 private:
 	std::vector<HEVert*> m_verts;
 	std::vector<HEHalfEdge*> m_edges;
