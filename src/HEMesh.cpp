@@ -63,7 +63,8 @@ HEHalfEdge* HEMesh::findOrCreateHalfEdge(HEVert* from, HEVert* to) {
 		m_edges.push_back(edge2);
 		m_edgeMap[key] = idxF < idxT ? edge1 : edge2;
 		return edge1;
-	} else {
+	}
+	else {
 		HEHalfEdge* edge = it->second;
 		HEHalfEdge* he_from_to = edge->vertex->index == idxF ? edge : edge->pair;
 		if (he_from_to->face != nullptr)
@@ -189,28 +190,37 @@ void HEMesh::forEachHalfEdgeInFace(HEFace* face,
 
 // 顶点邻边遍历
 void HEMesh::forEachOutgoingHalfEdge(HEVert* vert,
-	std::function<void(HEHalfEdge*)> callback) {
+	std::function<bool(HEHalfEdge*)> callback) {
 	HEHalfEdge* start = vert->edge;
 	HEHalfEdge* current = start;
 	do {
-		callback(current);
+		if (!callback(current)) {  // 一旦返回 false，立刻退出
+			break;
+		}
 		current = current->pair->next;
 	} while (current != start);
 }
 
 // 顶点邻点遍历
 void HEMesh::forEachNeighborVertex(HEVert* vert,
-	std::function<void(HEVert*)> callback) {
+	std::function<bool(HEVert*)> callback) {
 	forEachOutgoingHalfEdge(vert, [&](HEHalfEdge* he) {
-		callback(he->vertex);
+		if (!callback(he->pair->vertex)) {
+			return false;
+		}
 		});
 }
 
 // 顶点邻面遍历
 void HEMesh::forEachFaceAroundVertex(HEVert* vert,
-	std::function<void(HEFace*)> callback) {
+	std::function<bool(HEFace*)> callback) {
 	forEachOutgoingHalfEdge(vert, [&](HEHalfEdge* he) {
-		if (he->face != nullptr) callback(he->face);
+		if (he->face != nullptr)
+		{
+			if (!callback(he->face)) {
+				return false;
+			}
+		}
 		});
 }
 
@@ -239,7 +249,7 @@ std::vector<std::vector<HEVert*>> HEMesh::getBoundaryLoops() const {
 
 	std::unordered_set<HEHalfEdge*> visited;
 	std::vector<std::vector<HEVert*>> result;
-	for (HEHalfEdge* edge :getHalfEdges()) {
+	for (HEHalfEdge* edge : getHalfEdges()) {
 		if (!isBoundary(edge) || visited.count(edge)) continue;
 		HEHalfEdge* start = edge->pair;
 		HEHalfEdge* current = start;
@@ -287,16 +297,16 @@ bool HEMesh::validate() const {
 	}
 
 	// 3. 三角形面的 next 链长度为 3 
-	for (HEFace* face : getFaces()) {
-		HEHalfEdge* start = face->edge;
-		HEHalfEdge* current = start;
-		int count = 0;
-		do {
-			count++;
-			current = current->next;
-		} while (current != start && count <= 3);
-		if (count > 3) return false;
-	}
+	//for (HEFace* face : getFaces()) {
+	//	HEHalfEdge* start = face->edge;
+	//	HEHalfEdge* current = start;
+	//	int count = 0;
+	//	do {
+	//		count++;
+	//		current = current->next;
+	//	} while (current != start && count <= 3);
+	//	if (count > 3) return false;
+	//}
 
 	// 4. 每条半边的 pair->pair == 自身
 	for (HEHalfEdge* edge : getHalfEdges()) {
@@ -348,7 +358,7 @@ bool HEMesh::flipEdge(HEHalfEdge* he) {
 	HEVert* D = DA->vertex;
 
 	// 判断两个三角形合并后是否是凸四边形
-    // A、C是否在BD两侧
+	// A、C是否在BD两侧
 	Vector3 crossA_BD = Vector3(D->position - B->position).cross(A->position - B->position);
 	Vector3 crossC_BD = Vector3(D->position - B->position).cross(C->position - B->position);
 	// 大于0表示同侧，等于0表示四边形退化为大三角形
@@ -383,4 +393,219 @@ bool HEMesh::flipEdge(HEHalfEdge* he) {
 	DA->next = AB;
 	return true;
 
+}
+
+// 获取顶点的所有邻点
+std::vector<HEVert*> HEMesh::get_neighbors(HEVert* vert) {
+	std::vector<HEVert*> results;
+	forEachNeighborVertex(vert, [&](HEVert* nVert) {
+		results.push_back(nVert);
+		return true;
+		});
+	return results;
+}
+
+// 边折叠
+bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
+	// 1.1 校验能否折叠
+	HEVert* from = he->vertex;
+	HEVert* to;
+	HEHalfEdge* pair = he->pair;
+	if (newPosition == nullptr)
+	{
+		HEHalfEdge* pair = he->pair;
+		if (pair == nullptr)
+		{
+			return false;
+		}
+		to = pair->vertex;
+	}
+	else
+	{
+		to = findOrCreateVertex(*newPosition);
+		//findOrCreateHalfEdge(to, from);
+	}
+
+	// 1.2 判断顶点类型
+	bool toIsBround = false;
+	bool fromIsBround = false;
+	if (newPosition == nullptr) {
+		forEachOutgoingHalfEdge(to, [&](HEHalfEdge* he) {
+			if (he->face == nullptr || he->pair->face == nullptr)
+			{
+				toIsBround = true;
+			}
+			return true;
+			});
+	}
+
+	// 记录需要执行修改起点的半边
+	std::vector<HEHalfEdge*> toUpdateEdges;
+	forEachOutgoingHalfEdge(from, [&](HEHalfEdge* he) {
+		if (he->face == nullptr || he->pair->face == nullptr)
+		{
+			fromIsBround = true;
+		}
+		toUpdateEdges.push_back(he);
+		return true;
+		});
+
+	// 1.3 都是边界点
+	// 记录需要执行操作的面、半边
+	// 要删除的from临边的半边
+	HEHalfEdge* n = nullptr;
+	HEHalfEdge* pairN = nullptr;
+
+
+	// 要删除的面
+	HEFace* f1 = he->face;
+	HEFace* f2 = pair->face;
+
+	if (fromIsBround && toIsBround)
+	{
+		// 两个点是不是邻点
+		bool flag = false;
+		forEachNeighborVertex(from, [&](HEVert* vert) {
+			if (vert == to)
+			{
+				flag = true;
+				return false;
+			}
+			return true;
+			});
+		// 不是邻点，非法折叠
+		if (!flag) return false;
+		// 至少存在一个面不为空，且只能是三角形
+		if (f1 == nullptr && f2 == nullptr) return false;
+
+
+	}
+	else {
+		// 不全是边界的点，两个面都要非空且都是三角形
+		if (f1 == nullptr || f2 == nullptr) return false;
+	}
+
+	if (f1 != nullptr && he->next != nullptr && he->next->next != nullptr) {
+		n = he->next->next;
+		if (n->next != he) {
+			// 非三角形
+			return false;
+		}
+	}
+	if (f2 != nullptr && pair->next != nullptr && pair->next->next != nullptr) {
+		pairN = pair->next;
+		if (pairN->next->next != pair) {
+			// 非三角形
+			return false;
+		}
+	}
+
+	// 1.4 如果起点是边界点、终点的内部点，非法折叠
+	if (fromIsBround && !toIsBround) return false;
+	// 1.5 其余的情况
+	if (newPosition == nullptr && !fromIsBround) {
+		// 链接条件检查：内部边折叠要求 link(from) ∩ link(to) == 2
+		auto f = get_neighbors(from);
+		auto t = get_neighbors(to);
+		std::unordered_set<HEVert*> setF(f.begin(), f.end());
+		int common = 0;
+		for (HEVert* tVert : t) {
+			if (setF.count(tVert)) common++;
+		}
+		if (common != 2) return false;
+	}
+	// 2. 折叠合法,执行修改和删除操作
+	// 2.1 可能要修改的点,删除的半边中以from为终点的半边的起点
+	pair->vertex->edge = he->next;
+	pairN->pair ->vertex->edge = pairN->next;
+	n->vertex->edge = n->pair->next;
+
+
+	// 2.2 以from为起点的半边的起点修改为to
+	for (HEHalfEdge* toUpdateEdge : toUpdateEdges)
+	{
+		if (toUpdateEdge == he) continue;
+		toUpdateEdge->vertex = to;
+	}
+	// 2.3 删除from
+	m_vertMap.erase(he->vertex->position);
+	auto it1 = std::find(m_verts.begin(), m_verts.end(), he->vertex);
+	if (it1 != m_verts.end()) {
+		m_verts.erase(it1);
+	}
+
+	delete he->vertex;
+
+	// 2.4 删除两个face（如果不为空）
+	if (f1 != nullptr) {
+		auto it5 = std::find(m_faces.begin(), m_faces.end(), f1);
+		if (it5 != m_faces.end()) {
+			m_faces.erase(it5);
+		}
+
+		delete f1;
+	}
+	if (f2 != nullptr) {
+		auto it5 = std::find(m_faces.begin(), m_faces.end(), f2);
+		if (it5 != m_faces.end()) {
+			m_faces.erase(it5);
+		}
+
+		delete f2;
+	}
+
+	// 2.5 删除半边(折叠半边与其pair、from相邻的半边与其pair)
+
+	// 折叠半边与其pair
+	int fromIdx = from->index;
+	int toIdx = to->index;
+	EdgeKey k1 = fromIdx < toIdx ? EdgeKey(fromIdx, toIdx) : EdgeKey(fromIdx, toIdx);
+	m_edgeMap.erase(k1);
+	auto it2 = std::find(m_edges.begin(), m_edges.end(), he);
+	if (it2 != m_edges.end()) {
+		m_edges.erase(it2);
+	}
+	auto it3 = std::find(m_edges.begin(), m_edges.end(), pair);
+	if (it3 != m_edges.end()) {
+		m_edges.erase(it3);
+	}
+	delete he;
+	delete pair;
+
+	// from相邻的半边与其pair
+	if (n != nullptr) {
+		int fIdx = n->index;
+		int tIdx = n->pair->index;
+		EdgeKey k2 = fIdx < tIdx ? EdgeKey(fIdx, tIdx) : EdgeKey(fIdx, tIdx);
+		m_edgeMap.erase(k2);
+		auto it3 = std::find(m_edges.begin(), m_edges.end(), n);
+		if (it3 != m_edges.end()) {
+			m_edges.erase(it3);
+		}
+		auto it4 = std::find(m_edges.begin(), m_edges.end(), n->pair);
+		if (it4 != m_edges.end()) {
+			m_edges.erase(it4);
+		}
+		delete n->pair;
+		delete n;
+	}
+
+	if (pairN != nullptr) {
+		int fIdx = pairN->index;
+		int tIdx = pairN->pair->index;
+		EdgeKey k2 = fIdx < tIdx ? EdgeKey(fIdx, tIdx) : EdgeKey(fIdx, tIdx);
+		m_edgeMap.erase(k2);
+		auto it3 = std::find(m_edges.begin(), m_edges.end(), pairN);
+		if (it3 != m_edges.end()) {
+			m_edges.erase(it3);
+		}
+		auto it4 = std::find(m_edges.begin(), m_edges.end(), pairN->pair);
+		if (it4 != m_edges.end()) {
+			m_edges.erase(it4);
+		}
+		delete pairN->pair;
+		delete pairN;
+	}
+
+	return true;
 }

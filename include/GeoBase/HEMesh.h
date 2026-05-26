@@ -13,7 +13,7 @@ struct HEVert {
 	Point3 position;
 	HEHalfEdge* edge;
 	int index;
-
+	HEVert() {}
 	HEVert(const Point3& pos) : position(pos), edge(nullptr), index(-1){}
 
 	HEVert(const Point3& p, int idx)
@@ -82,15 +82,15 @@ public:
 
 	// 顶点邻边遍历
 	void forEachOutgoingHalfEdge(HEVert* vert,
-		std::function<void(HEHalfEdge*)> callback);
+		std::function<bool(HEHalfEdge*)> callback);
 
 	// 顶点邻点遍历
 	void forEachNeighborVertex(HEVert* vert,
-		std::function<void(HEVert*)> callback);
+		std::function<bool(HEVert*)> callback);
 
 	// 顶点邻面遍历
 	void forEachFaceAroundVertex(HEVert* vert,
-		std::function<void(HEFace*)> callback);
+		std::function<bool(HEFace*)> callback);
 
 	// 边界边判断
 	bool isBoundary(const HEHalfEdge* he) const;
@@ -112,6 +112,12 @@ public:
 
 	// 边翻转
 	bool flipEdge(HEHalfEdge* he);
+
+	// 边折叠
+	bool collapseEdge(HEHalfEdge* he, Point3* newPosition = nullptr);
+
+	// 获取顶点的所有邻点
+	std::vector<HEVert*> get_neighbors(HEVert* vert);
 
 private:
 	std::vector<HEVert*> m_verts;
