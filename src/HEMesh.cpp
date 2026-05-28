@@ -189,6 +189,7 @@ bool HEMesh::loadOBJ(const std::string& filename) {
 // 面半边遍历
 void HEMesh::forEachHalfEdgeInFace(HEFace* face,
 	std::function<void(HEHalfEdge*)> callback) {
+	if (!face || numVerts() == 0 || numFaces() == 0) return;
 	if (!face || !face->edge) return;
 	HEHalfEdge* start = face->edge;
 	HEHalfEdge* current = start;
@@ -201,6 +202,7 @@ void HEMesh::forEachHalfEdgeInFace(HEFace* face,
 // 顶点邻边遍历
 void HEMesh::forEachOutgoingHalfEdge(HEVert* vert,
 	std::function<bool(HEHalfEdge*)> callback) {
+	if (!vert || numVerts() == 0 || numFaces() == 0) return;
 	HEHalfEdge* start = vert->edge;
 	HEHalfEdge* current = start;
 	do {
@@ -214,6 +216,7 @@ void HEMesh::forEachOutgoingHalfEdge(HEVert* vert,
 // 顶点邻点遍历
 void HEMesh::forEachNeighborVertex(HEVert* vert,
 	std::function<bool(HEVert*)> callback) {
+	if (!vert || numVerts() == 0 || numFaces() == 0) return;
 	forEachOutgoingHalfEdge(vert, [&](HEHalfEdge* he) {
 		if (!callback(he->pair->vertex)) {
 			return false;
@@ -224,6 +227,7 @@ void HEMesh::forEachNeighborVertex(HEVert* vert,
 // 顶点邻面遍历
 void HEMesh::forEachFaceAroundVertex(HEVert* vert,
 	std::function<bool(HEFace*)> callback) {
+	if (!vert || numVerts() == 0 || numFaces() == 0) return;
 	forEachOutgoingHalfEdge(vert, [&](HEHalfEdge* he) {
 		if (he->face != nullptr)
 		{

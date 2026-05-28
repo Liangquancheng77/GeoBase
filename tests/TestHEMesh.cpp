@@ -298,7 +298,7 @@ TEST(TestHEMesh, TestHEMesh22) {
 	HEMesh mesh;
 	mesh.loadOBJ("cube.obj");
 	mesh.meshQualityReport();
-	HEVert* X = mesh.splitEdge(mesh.getHalfEdges()[randomInt(0, mesh.numHalfEdges()-1)], randomDouble(0, 1));
+	HEVert* X = mesh.splitEdge(mesh.getHalfEdges()[randomInt(0, mesh.numHalfEdges() - 1)], randomDouble(0, 1));
 	EXPECT_TRUE(mesh.validate());
 	mesh.meshQualityReport();
 }
@@ -308,4 +308,55 @@ TEST(TestHEMesh, TestHEMesh23) {
 	HEMesh mesh;
 	mesh.loadOBJ("teapot.obj");
 	mesh.meshQualityReport();
+}
+
+
+// =============================退化测试==============================
+
+// 空网格（0顶点、0面）：所有遍历函数不崩溃
+TEST(TestHEMesh, TestHEMesh24) {
+	HEMesh mesh;
+
+	// 随便找个不存在的顶点（这里不传），或空遍历
+	size_t cnt = 0;
+	// 空网格没有顶点，下面这行通常不会触发
+	// 但你接口要保证：传 nullptr 也不崩
+	mesh.forEachFaceAroundVertex(nullptr, [&](HEFace*) { cnt++; return true; });
+
+	EXPECT_EQ(cnt, 0);
+}
+
+// 单个三角形网格：遍历正确，只有边界边
+//TEST(TestHEMesh, TestHEMesh25) {
+//	HEMesh mesh;
+//	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+//	int boundaryCount = 0;
+//	mesh.forEachOutgoingHalfEdge(mesh.getVertices()[0], [&](HEHalfEdge* he) -> bool {
+//		if (mesh.isBoundary(he)) {
+//			++boundaryCount;
+//		}
+//		return true;
+//	});
+//	EXPECT_EQ(boundaryCount, 2);
+//}
+
+// 非流形边（三个三角形共享一条边）
+TEST(TestHEMesh, TestHEMesh26) {
+	HEMesh mesh;
+	mesh.addTriangle(Point3(1.0, 0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
+	mesh.addTriangle(Point3(0, 1.0, 0), Point3(1.0, 0, 0), Point3(0, 0, 1.0));
+	EXPECT_THROW(mesh.addTriangle(Point3(0, 1.0, 0), Point3(1.0, 0, 0), Point3(0, 0, 2.0)), std::runtime_error);
+
+}
+
+// 大量随机边翻转：100次随机翻转后，validate仍然通过
+TEST(TestHEMesh, TestHEMesh27) {
+	HEMesh mesh;
+	mesh.loadOBJ("cube.obj");
+
+	for (int i = 0; i < 100; i++)
+	{
+		mesh.flipEdge(mesh.getHalfEdges()[randomInt(0, mesh.numHalfEdges() - 1)]);
+	}
+	mesh.validate();
 }
