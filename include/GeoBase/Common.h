@@ -39,6 +39,12 @@ inline double randomDouble(double min, double max) {
     return dist(getRNG());
 }
 
+// ---------------------- 生成 [min, max] 随机整数（包括两端） ----------------------
+inline int randomInt(int min, int max) {
+    std::uniform_int_distribution<int> dist(min, max); // 整数专用
+    return dist(getRNG());
+}
+
 // 高精度计时器（微秒级）
 class Timer {
 public:

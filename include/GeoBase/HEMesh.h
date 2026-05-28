@@ -110,14 +110,38 @@ public:
 	// 网格完整性验证
 	bool validate() const;
 
+	// 更新m_edgeMap，删除he原来的key，新增from、to的key
+	void updateEdgeMap(HEHalfEdge* he, HEVert* from, HEVert* to);
+
+	// 将半边的起点修改为vert
+	void updateEdgeVertex(HEHalfEdge* he, HEVert* vert);
+
 	// 边翻转
 	bool flipEdge(HEHalfEdge* he);
 
 	// 边折叠
 	bool collapseEdge(HEHalfEdge* he, Point3* newPosition = nullptr);
 
+	// 创建顶点X并且添加相关的半边
+	HEVert* creatVertXAndAddEdges(HEVert* A, HEVert* B, HEVert* C, double t, HEHalfEdge*& XC, HEHalfEdge*& XB);
+
+	// 边分割
+	HEVert* splitEdge(HEHalfEdge* he, double t = 0.5);
+
 	// 获取顶点的所有邻点
 	std::vector<HEVert*> get_neighbors(HEVert* vert);
+
+	// 计算三角形的面积
+	double triangleArea(const HEFace* face) const;
+
+	// 最长边与最短边的比值
+	double triangleAspectRatio(const HEFace* face) const;
+
+	// 最小内角
+	double minAngle(const HEFace* face) const;
+
+	// 网格质量统计报告
+	void meshQualityReport() const;
 
 private:
 	std::vector<HEVert*> m_verts;
@@ -151,7 +175,10 @@ private:
 	};
 	std::unordered_map<EdgeKey, HEHalfEdge*, EdgeKeyHash> m_edgeMap;
 
-	// 辅助函数:创建一对方向相反的半边
+	// 创建一对方向相反的半边
 	HEHalfEdge* findOrCreateHalfEdge(HEVert* from,HEVert* to);
+
+	// 辅助函数:创建一个面
+	HEFace* createFace(HEHalfEdge* he);
 
 };

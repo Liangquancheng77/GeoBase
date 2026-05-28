@@ -4,6 +4,7 @@
 #include <fstream>   
 #include <string>
 #include <unordered_set>
+#include <assert.h>
 
 using namespace std;
 
@@ -44,7 +45,7 @@ HEVert* HEMesh::findOrCreateVertex(const Point3& pos) {
 }
 
 
-// 辅助函数:获取或创建一对半边
+// 获取或创建一对半边
 HEHalfEdge* HEMesh::findOrCreateHalfEdge(HEVert* from, HEVert* to) {
 
 	int idxF = from->index;
@@ -75,6 +76,15 @@ HEHalfEdge* HEMesh::findOrCreateHalfEdge(HEVert* from, HEVert* to) {
 		return he_from_to;
 	}
 
+}
+
+// 辅助函数:创建一个面
+HEFace* HEMesh::createFace(HEHalfEdge* he) {
+	HEFace* f = new HEFace();
+	f->edge = he;
+	f->index = numFaces();
+	m_faces.push_back(f);
+	return f;
 }
 
 // 添加三角形
@@ -334,6 +344,46 @@ bool HEMesh::validate() const {
 	return true;
 }
 
+// 更新m_edgeMap，删除he原来的key，新增from、to的key
+void HEMesh::updateEdgeMap(HEHalfEdge* he, HEVert* from, HEVert* to) {
+	int idxF1 = he->vertex->index;
+	int idxF2 = from->index;
+	int idxT1 = he->pair->vertex->index;
+	int idxT2 = to->index;
+	
+	EdgeKey key2 = idxF2 < idxT2 ? EdgeKey(idxF2, idxT2) : EdgeKey(idxT2, idxF2);
+	auto it2 = m_edgeMap.find(key2);
+	if (it2 == m_edgeMap.end()) {
+		m_edgeMap[key2] = idxF2 < idxT2 ? he : he->pair;
+	}
+	// 移除旧的缓存（也可以考虑不移除）
+	EdgeKey key1 = idxF1 < idxT1 ? EdgeKey(idxF1, idxT1) : EdgeKey(idxT1, idxF1);
+	auto it1 = m_edgeMap.find(key1);
+	if (it1 != m_edgeMap.end()) {
+		m_edgeMap.erase(key1);
+	}
+}
+
+// 将半边的起点修改为vert
+void HEMesh::updateEdgeVertex(HEHalfEdge* he, HEVert* vert) {
+	int idxF1 = he->vertex->index;
+	int idxF2 = vert->index;
+	int idxT = he->pair->vertex->index;
+	he->vertex = vert;
+	EdgeKey key = idxF2 < idxT ? EdgeKey(idxF2, idxT) : EdgeKey(idxT, idxF2);
+	auto it = m_edgeMap.find(key);
+	if (it == m_edgeMap.end()) {
+		m_edgeMap[key] = idxF2 < idxT ? he : he->pair;
+	}
+	// 移除旧的缓存（也可以考虑不移除）
+	EdgeKey key2 = idxF1 < idxT ? EdgeKey(idxF1, idxT) : EdgeKey(idxT, idxF1);
+	auto it2 = m_edgeMap.find(key2);
+	if (it2 != m_edgeMap.end()) {
+		m_edgeMap.erase(key2);
+	}
+
+}
+
 
 // 边翻转
 bool HEMesh::flipEdge(HEHalfEdge* he) {
@@ -368,6 +418,9 @@ bool HEMesh::flipEdge(HEHalfEdge* he) {
 	Vector3 crossD_AC = Vector3(C->position - A->position).cross(D->position - A->position);
 	if (crossB_AC.dot(crossD_AC) >= -EPS_ABS) return false;
 
+	// 更新map
+	updateEdgeMap(he, D, B);
+
 	// A、C的半边可能是内边，避免出错所以需要更新
 	A->edge = AB;
 	C->edge = CD;
@@ -381,6 +434,7 @@ bool HEMesh::flipEdge(HEHalfEdge* he) {
 	he->next = BC;
 	pair->vertex = B;
 	pair->next = DA;
+
 
 	// AB、CD：起点不变、pair不变、next改变、face改变
 	AB->next = pair;
@@ -520,14 +574,22 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 	pairN->pair ->vertex->edge = pairN->next;
 	n->vertex->edge = n->pair->next;
 
+	// 2.2 可能要修改的面，n的pair和pairN的pair所在的面（如果存在的话）
+	if (n->pair->face != nullptr) {
+		n->pair->face->edge = he->next->pair;
+	}
+	if (pairN->pair->face != nullptr) {
+		pairN->pair->face->edge = pairN->next;
+	}
 
-	// 2.2 以from为起点的半边的起点修改为to
+	// 2.3 以from为起点的半边的起点修改为to,同时更新map
 	for (HEHalfEdge* toUpdateEdge : toUpdateEdges)
 	{
 		if (toUpdateEdge == he) continue;
 		toUpdateEdge->vertex = to;
+		updateEdgeVertex(toUpdateEdge, to);
 	}
-	// 2.3 删除from
+	// 2.4 删除from
 	m_vertMap.erase(he->vertex->position);
 	auto it1 = std::find(m_verts.begin(), m_verts.end(), he->vertex);
 	if (it1 != m_verts.end()) {
@@ -536,7 +598,7 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 
 	delete he->vertex;
 
-	// 2.4 删除两个face（如果不为空）
+	// 2.5 删除两个face（如果不为空）
 	if (f1 != nullptr) {
 		auto it5 = std::find(m_faces.begin(), m_faces.end(), f1);
 		if (it5 != m_faces.end()) {
@@ -554,7 +616,7 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 		delete f2;
 	}
 
-	// 2.5 删除半边(折叠半边与其pair、from相邻的半边与其pair)
+	// 2.6 删除半边(折叠半边与其pair、from相邻的半边与其pair)
 
 	// 折叠半边与其pair
 	int fromIdx = from->index;
@@ -608,4 +670,278 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 	}
 
 	return true;
+}
+
+// 创建顶点X并且添加相关的半边
+HEVert* HEMesh::creatVertXAndAddEdges(HEVert* A, HEVert* B, HEVert* C, double t, HEHalfEdge*& XC, HEHalfEdge*& XB) {
+	const Point3& pos = (B->position - A->position) * t + A->position;
+	HEVert* X = findOrCreateVertex(pos);
+	XC = findOrCreateHalfEdge(X, C);
+	XB = findOrCreateHalfEdge(X, B);
+	return X;
+}
+
+// 边分割
+HEVert* HEMesh::splitEdge(HEHalfEdge* he, double t) {
+	if (t < EPS_ABS || t > 1 - EPS_ABS) {
+		assert(false && "splitEdge: t out of valid range (0, 1)");
+		return nullptr;
+	}
+
+	HEFace* f1 = he->face;
+	HEFace* f2 = he->pair->face;
+
+	// 孤立边（两侧均无面）不允许分割
+	if (!f1 && !f2) {
+		assert(false && "splitEdge: isolated edge, no adjacent face");
+		return nullptr;
+	}
+
+	// 确保如果只有一侧有面，则 he 指向有面一侧
+	if (!f1 && f2) {
+		he = he->pair;
+		std::swap(f1, f2);
+	}
+
+	HEVert* A = he->vertex;
+	HEVert* B = he->pair->vertex;
+	HEHalfEdge* BC = he->next;
+	HEHalfEdge* CA = he->next->next;
+	HEVert* C = CA->vertex;
+
+	// 校验是否是三角形
+	if (CA->next != he) {
+		assert(false && "splitEdge: no a Triangle3");
+		return nullptr;
+	}
+
+	if (f2) {
+		// 内部边
+		HEHalfEdge* AD = he->pair->next;
+		HEHalfEdge* DB = AD->next;
+		if (DB->next != he->pair) {
+			assert(false && "splitEdge: no a Triangle3");
+			return nullptr;
+		}
+		HEVert* D = DB->vertex;
+		HEHalfEdge* XC = nullptr;
+		HEHalfEdge* XB = nullptr;
+		//he->face = nullptr;
+		//he->pair->face = nullptr;
+		HEVert* X = creatVertXAndAddEdges(A, B, C, t, XC, XB);
+
+		HEHalfEdge* XD = findOrCreateHalfEdge(X, D);
+
+		// 新增两个面
+		HEFace* newF1 = createFace(BC);
+		HEFace* newF2 = createFace(AD);
+
+		// 新增的X设置出边
+		X->edge = XC;
+
+		// 修改可能发生变化的原来的顶点
+		B->edge = BC;
+
+		// 修改可能发生变化的原来的面
+		f1->edge = he;
+		f2->edge = XB->pair;
+
+		// 修改起点位置发生变化的半边(AB->AX,BA->XA)
+		updateEdgeMap(he, A, X);
+		he->pair->vertex = X;
+
+		// 修改半边的面
+		XC->face = f1;
+		XB->pair->face = f2;
+		XD->face = f2;
+		XC->pair->face = newF1;
+		XB->face = newF1;
+		BC->face = newF1;
+		XD->pair->face = newF2;
+		he->pair->face = newF2;
+		AD->face = newF2;
+
+		// 修改半边的next
+		// 三角形CAX
+		he->next = XC;
+		XC->next = CA;
+		// 三角形CXB
+		XC->pair->next = XB;
+		XB->next = BC;
+		BC->next = XC->pair;
+		// 三角形DBX
+		DB->next = XB->pair;
+		XB->pair->next = XD;
+		XD->next = DB;
+		// 三角形DXA
+		XD->pair->next = he->pair;
+		he->pair->next = AD;
+		AD->next = XD->pair;
+		return X;
+	}
+	else {
+		// 边界边
+		HEHalfEdge* XC = nullptr;
+		HEHalfEdge* XB = nullptr;
+		HEVert* X = creatVertXAndAddEdges(A, B, C, t, XC, XB);
+
+		// 新增一个面
+		HEFace* newF1 = createFace(BC);
+
+		// 修改可能发生变化的原来的顶点
+		B->edge = BC;
+
+		// 修改可能发生变化的原来的面
+		f1->edge = he;
+
+		// 修改起点位置发生变化的半边(AB->AX,BA->XA)
+		updateEdgeMap(he, A, X);
+		he->pair->vertex = X;
+
+		// 修改半边的面
+		XC->face = f1;
+		XC->pair->face = newF1;
+		XB->face = newF1;
+		BC->face = newF1;
+
+		// 修改半边的next
+		// 三角形CAX
+		he->next = XC;
+		XC->next = CA;
+		// 三角形CXB
+		XC->pair->next = XB;
+		XB->next = BC;
+		BC->next = XC->pair;
+		return X;
+
+	}
+
+}
+
+// 辅助：从三角形面提取三个顶点
+void getFaceVertices(const HEFace* face, Point3& A, Point3& B, Point3& C) {
+	HEHalfEdge* he = face->edge;
+	A = he->vertex->position;
+	B = he->next->vertex->position;
+	C = he->next->next->vertex->position;
+}
+
+// 计算三角形的面积
+double HEMesh::triangleArea(const HEFace* face) const {
+	if (!face) return 0.0;
+	Point3 A, B, C;
+	getFaceVertices(face, A, B, C);
+	Vector3 AB = B - A;
+	Vector3 AC = C - A;
+	return 0.5 * std::abs(AB.cross(AC).length());
+}
+
+// 最长边与最短边的比值
+double HEMesh::triangleAspectRatio(const HEFace* face) const {
+	if (!face) return 0.0;
+	Point3 A, B, C;
+	getFaceVertices(face, A, B, C);
+	double ABLength = (B - A).length();
+	double ACLength = (C - A).length();
+	double BCLength = (C - B).length();
+	double minLen = std::min({ ABLength, ACLength, BCLength });
+	if (minLen < EPS_ABS) return std::numeric_limits<double>::infinity();
+	double maxLen = std::max({ ABLength, ACLength, BCLength });
+	return maxLen / minLen;
+}
+
+
+// 最小内角
+double HEMesh::minAngle(const HEFace* face) const {
+	if (!face) return 0.0;
+	Point3 A, B, C;
+	getFaceVertices(face, A, B, C);
+	double c = (B - A).length();
+	double b = (C - A).length();
+	double a = (C - B).length();
+
+	// 余弦定理求角度
+	auto angle = [](double opp, double adj1, double adj2) -> double {
+		double denom = 2.0 * adj1 * adj2;
+		if (denom < EPS_ABS) return 0.0;
+		double cosVal = (adj1 * adj1 + adj2 * adj2 - opp * opp) / denom;
+		cosVal = std::max(-1.0, std::min(1.0, cosVal));
+		return std::acos(cosVal);
+		};
+
+	double angleA = angle(a, b, c);
+	double angleB = angle(b, a, c);
+	double angleC = angle(c, a, c);
+	return std::min({ angleA, angleB, angleC });
+}
+
+
+// 网格质量统计报告
+void HEMesh::meshQualityReport() const {
+
+	int totalFaces = numFaces();
+	if (totalFaces == 0)
+	{
+		cout << "No faces in mesh.\n" << endl;
+		return;
+	}
+
+	double totalArea = 0.0;
+	double minArea = std::numeric_limits<double>::max();
+	double maxArea = 0.0;
+	double minAngleGlobal = std::numeric_limits<double>::max();
+	double maxAngleGlobal = 0.0;
+	int degenerateCount = 0;
+
+	for (HEFace* face : getFaces()) {
+		double area = triangleArea(face);
+
+		auto angle = [](double opp, double adj1, double adj2) -> double {
+			double denom = 2.0 * adj1 * adj2;
+			if (denom < EPS_ABS) return 0.0;
+			double cosVal = (adj1 * adj1 + adj2 * adj2 - opp * opp) / denom;
+			cosVal = std::max(-1.0, std::min(1.0, cosVal));
+			return std::acos(cosVal);
+			};
+		Point3 A, B, C;
+		getFaceVertices(face, A, B, C);
+		double c = (B - A).length();
+		double b = (C - A).length();
+		double a = (C - B).length();
+
+		double angleA = angle(a, b, c);
+		double angleB = angle(b, a, c);
+		double angleC = angle(c, a, b);
+
+		double minAngle = std::min({ angleA ,angleB ,angleC });
+		double maxAngle = std::max({ angleA ,angleB ,angleC });
+
+		totalArea += area;
+		minArea = std::min(minArea, area);
+		maxArea = std::max(maxArea, area);
+		minAngleGlobal = std::min(minAngleGlobal, minAngle);
+		maxAngleGlobal = std::max(maxAngleGlobal, maxAngle);
+
+		// 退化判断：面积过小或最小角过小
+		if (minAngle < EPS_REL || area < EPS_ABS) {
+			++degenerateCount;
+		}
+
+	}
+
+	double avgArea = totalArea / totalFaces;
+
+	// 转换为度便于阅读
+	auto rad2deg = [](double rad) { return rad * 180.0 / PI; };
+
+	std::cout << "========== Mesh Quality Report ==========\n";
+	std::cout << "Number of faces: " << totalFaces << "\n";
+	std::cout << "Average area: " << avgArea << "\n";
+	std::cout << "Minimum area: " << minArea << "\n";
+	std::cout << "Maximum area: " << maxArea << "\n";
+	std::cout << "Minimum interior angle: " << minAngleGlobal << " rad (" << rad2deg(minAngleGlobal) << "°)\n";
+	std::cout << "Maximum interior angle: " << maxAngleGlobal << " rad (" << rad2deg(maxAngleGlobal) << "°)\n";
+	std::cout << "Number of degenerate faces: " << degenerateCount << "\n";
+	std::cout << "=========================================\n";
+
 }

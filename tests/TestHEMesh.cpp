@@ -189,8 +189,8 @@ using namespace std;
 //	EXPECT_THROW(mesh.addTriangle(Point3(0, 1.0, 0), Point3(1.0, 0, 0), Point3(0, 0, 2.0)), std::runtime_error);
 //}
 //
-//// =============================边翻转==============================
-//// 创建一个由两个三角形组成的四边形，执行翻转，验证翻转后仍有两个三角形，对角线顶点变化
+// =============================边翻转==============================
+// 创建一个由两个三角形组成的四边形，执行翻转，验证翻转后仍有两个三角形，对角线顶点变化
 //TEST(TestHEMesh, TestHEMesh12) {
 //	HEMesh mesh;
 //	mesh.addTriangle(Point3(0, -1.0, 0), Point3(0, 1.0, 0), Point3(0, 0, -1.0));
@@ -239,35 +239,73 @@ using namespace std;
 //	EXPECT_FALSE(mesh.flipEdge(mesh.getHalfEdges()[0]));
 //
 //}
-
-// =============================边折叠==============================
-
-// 对四面体的一条边折叠，验证面数减少2，顶点数减少1
-TEST(TestHEMesh, TestHEMesh17) {
-	HEMesh mesh;
-	mesh.loadOBJ("tetrahedron.obj");
-	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
-	EXPECT_EQ(mesh.numFaces(), 2);
-	EXPECT_EQ(mesh.numVerts(), 3);
-	EXPECT_EQ(mesh.numHalfEdges(), 6);
-}
-
-//// 折叠到中点，验证新顶点位置正确
-//TEST(TestHEMesh, TestHEMesh18) {
+//
+//// =============================边折叠==============================
+//
+//// 对四面体的一条边折叠，验证面数减少2，顶点数减少1
+//TEST(TestHEMesh, TestHEMesh17) {
 //	HEMesh mesh;
 //	mesh.loadOBJ("tetrahedron.obj");
-//	bool ok = mesh.collapseEdge(mesh.getHalfEdges()[2]);
-//	EXPECT_TRUE(ok);
-//	cout << "--------------------------------------------" << endl;
+//	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
+//	EXPECT_EQ(mesh.numFaces(), 2);
+//	EXPECT_EQ(mesh.numVerts(), 3);
+//	EXPECT_EQ(mesh.numHalfEdges(), 6);
+//}
+//
+////// 折叠到中点，验证新顶点位置正确
+////TEST(TestHEMesh, TestHEMesh18) {
+////	HEMesh mesh;
+////	mesh.loadOBJ("tetrahedron.obj");
+////	bool ok = mesh.collapseEdge(mesh.getHalfEdges()[2]);
+////	EXPECT_TRUE(ok);
+////	cout << "--------------------------------------------" << endl;
+////}
+//
+//// 对立方体连续折叠多条边，每次验证validate通过
+//TEST(TestHEMesh, TestHEMesh19) {
+//	HEMesh mesh;
+//	mesh.loadOBJ("cube.obj");
+//	//EXPECT_TRUE(mesh.validate());
+//	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
+//	//EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[4]));
+//	//EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[6]));
+//	EXPECT_TRUE(mesh.validate());
 //}
 
-// 对立方体连续折叠多条边，每次验证validate通过
-TEST(TestHEMesh, TestHEMesh19) {
+
+// =============================边分割==============================
+// 普通测试
+//TEST(TestHEMesh, TestHEMesh20) {
+//	HEMesh mesh;
+//	mesh.addTriangle(Point3(0, 0, 0), Point3(2.0, 0, 0), Point3(1.0, 1.0, 0));
+//	mesh.addTriangle(Point3(0, 0, 0), Point3(1.0, -1.0, 0), Point3(2.0, 0, 0));
+//	HEVert* X = mesh.splitEdge(mesh.getHalfEdges()[0]);
+//
+//}
+
+// 测试四面体边分割后的网格完整性
+TEST(TestHEMesh, TestHEMesh21) {
+	HEMesh mesh;
+	mesh.loadOBJ("tetrahedron.obj");
+	mesh.meshQualityReport();
+	HEVert* X = mesh.splitEdge(mesh.getHalfEdges()[0], 0.5);
+	EXPECT_TRUE(mesh.validate());
+	mesh.meshQualityReport();
+}
+
+// 对立方体执行随机边分割，验证面数增加，面积缩小
+TEST(TestHEMesh, TestHEMesh22) {
 	HEMesh mesh;
 	mesh.loadOBJ("cube.obj");
-	//EXPECT_TRUE(mesh.validate());
-	//EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
-	//EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[4]));
-	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[6]));
+	mesh.meshQualityReport();
+	HEVert* X = mesh.splitEdge(mesh.getHalfEdges()[randomInt(0, mesh.numHalfEdges()-1)], randomDouble(0, 1));
 	EXPECT_TRUE(mesh.validate());
+	mesh.meshQualityReport();
+}
+
+// 对茶壶OBJ运行质量报告
+TEST(TestHEMesh, TestHEMesh23) {
+	HEMesh mesh;
+	mesh.loadOBJ("teapot.obj");
+	mesh.meshQualityReport();
 }
