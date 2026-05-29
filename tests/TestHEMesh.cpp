@@ -242,15 +242,15 @@ using namespace std;
 //
 //// =============================边折叠==============================
 //
-//// 对四面体的一条边折叠，验证面数减少2，顶点数减少1
-//TEST(TestHEMesh, TestHEMesh17) {
-//	HEMesh mesh;
-//	mesh.loadOBJ("tetrahedron.obj");
-//	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
-//	EXPECT_EQ(mesh.numFaces(), 2);
-//	EXPECT_EQ(mesh.numVerts(), 3);
-//	EXPECT_EQ(mesh.numHalfEdges(), 6);
-//}
+// 对四面体的一条边折叠，验证面数减少2，顶点数减少1
+TEST(TestHEMesh, TestHEMesh17) {
+	HEMesh mesh;
+	mesh.loadOBJ("tetrahedron.obj");
+	EXPECT_TRUE(mesh.collapseEdge(mesh.getHalfEdges()[2]));
+	EXPECT_EQ(mesh.numFaces(), 2);
+	EXPECT_EQ(mesh.numVerts(), 3);
+	EXPECT_EQ(mesh.numHalfEdges(), 6);
+}
 //
 ////// 折叠到中点，验证新顶点位置正确
 ////TEST(TestHEMesh, TestHEMesh18) {

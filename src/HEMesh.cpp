@@ -481,7 +481,6 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 	else
 	{
 		to = findOrCreateVertex(*newPosition);
-		//findOrCreateHalfEdge(to, from);
 	}
 
 	// 1.2 判断顶点类型
