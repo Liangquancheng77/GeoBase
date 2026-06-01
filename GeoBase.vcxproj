@@ -159,6 +159,7 @@
     <ClInclude Include="include\GeoBase\AABB.h" />
     <ClInclude Include="include\GeoBase\BVH.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
+    <ClInclude Include="include\GeoBase\EdgeCollapse.h" />
     <ClInclude Include="include\GeoBase\GeometryCommon.h" />
     <ClInclude Include="include\GeoBase\HEMesh.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />

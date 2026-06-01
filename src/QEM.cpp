@@ -6,7 +6,11 @@ Quadric::Quadric() {
 }
 
 // 从平面构建Q矩阵
-Quadric::Quadric(const Vector3& normal, const Point3& point) : Quadric(normal.x, normal.y, normal.z, -(normal.dot(point))) {}
+Quadric::Quadric(const Vector3& normal, const Point3& point) {
+    //Vector3 n = normal.normalized(); // 强制单位化
+    double d = -normal.dot(point);
+    *this = Quadric(normal.x, normal.y, normal.z, d);
+}
 
 // 直接从平面的四个参数构建
 Quadric::Quadric(double a, double b, double c, double d) {
@@ -26,6 +30,15 @@ Quadric Quadric::operator+(const Quadric& other) const {
 	for (int i = 0; i < 10; i++)
 	{
 		ret.m[i] += other.m[i];
+	}
+	return ret;
+}
+
+Quadric Quadric::operator*(const double scalar) const {
+	Quadric ret = *this;
+	for (int i = 0; i < 10; i++)
+	{
+		ret.m[i] *= scalar;
 	}
 	return ret;
 }

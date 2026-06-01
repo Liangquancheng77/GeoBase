@@ -167,5 +167,8 @@
     <ClInclude Include="include\GeoBase\QEM.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
+    <ClInclude Include="include\GeoBase\EdgeCollapse.h">
+      <Filter>头文件\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

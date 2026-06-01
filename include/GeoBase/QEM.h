@@ -16,6 +16,8 @@ struct Quadric {
 
 	Quadric operator+(const Quadric& other) const;
 
+	Quadric operator*(const double scalar) const;
+
 	// 计算在点p处的误差：p^T * Q * p
 	double evaluate(const Point3& p) const;
 

@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <functional>
 #include <ostream>
+#include "QEM.h"
+#include "EdgeCollapse.h"
+#include <queue>
 
 struct HEHalfEdge;
 
@@ -12,6 +15,7 @@ struct HEVert {
 
 	Point3 position;
 	HEHalfEdge* edge;
+	Quadric quadric;
 	int index;
 	HEVert() {}
 	HEVert(const Point3& pos) : position(pos), edge(nullptr), index(-1){}
@@ -43,9 +47,10 @@ struct HEHalfEdge {
 	HEFace* face;
 	HEHalfEdge* pair;
 	HEHalfEdge* next;
+	EdgeCollapse* ec;
 	int index;
-	//HEHalfEdge() {}
-	HEHalfEdge(HEVert* vertex) : vertex(vertex), face(nullptr), pair(nullptr), next(nullptr), index(-1){}
+	HEHalfEdge() {}
+	HEHalfEdge(HEVert* vertex) : vertex(vertex), face(nullptr), pair(nullptr), next(nullptr), ec(nullptr), index(-1){}
 
 };
 
@@ -131,6 +136,9 @@ public:
 	// 获取顶点的所有邻点
 	std::vector<HEVert*> get_neighbors(HEVert* vert);
 
+	// 获取顶点的所有出边
+	std::vector<HEHalfEdge*> get_outgoing_halfedges(HEVert* vert);
+
 	// 计算三角形的面积
 	double triangleArea(const HEFace* face) const;
 
@@ -143,6 +151,18 @@ public:
 	// 网格质量统计报告
 	void meshQualityReport() const;
 
+	// 计算边折叠成本
+	EdgeCollapse* computeCollapse(HEHalfEdge* he);
+
+	// 主简化循环
+	void simplify(int targetFaces);
+
+	// 边界惩罚
+	void penalizeBoundaries();
+
+	// 特征边保护
+	bool isFeatureEdge(HEHalfEdge* he, double angleThreshold = 60.0);
+
 private:
 	std::vector<HEVert*> m_verts;
 	std::vector<HEHalfEdge*> m_edges;
@@ -151,10 +171,10 @@ private:
 	// 顶点去重
 	struct Point3Hash {
 		size_t operator() (const Point3& p) const {
-			const double scale = 1e4;
-			auto h = std::hash<long long>()(static_cast<long long>(p.x * scale));
-			h ^= std::hash<long long>()(static_cast<long long>(p.y * scale)) << 1;
-			h ^= std::hash<long long>()(static_cast<long long>(p.z * scale)) << 2;
+			constexpr double invEps = 1.0 / EPS_ABS; 
+			auto h = std::hash<long long>()(static_cast<long long>(p.x * invEps));
+			h ^= std::hash<long long>()(static_cast<long long>(p.y * invEps)) << 1;
+			h ^= std::hash<long long>()(static_cast<long long>(p.z * invEps)) << 2;
 			return h;
 		}
 	};
@@ -180,5 +200,11 @@ private:
 
 	// 辅助函数:创建一个面
 	HEFace* createFace(HEHalfEdge* he);
+
+	// 顶点Q矩阵初始化
+	void computeInitialQMatrices();
+
+	// 获取所有边界边
+	std::vector<HEHalfEdge*> getBoundaryEdges();
 
 };

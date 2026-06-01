@@ -67,8 +67,7 @@ TEST(QEMTest, QEMTest6) {
 }
 
 // 测试：极大/极小数值平面，浮点数值退化场景
-TEST(QuadricDegenerateTest, QEMTest7) {
-	const double EPS = 1e-3;
+TEST(QEMTest, QEMTest7) {
 	// 极大值平面
 	double large = 1e6;
 	Quadric q_large(Vector3(1, 0, 0), Point3(large, 0, 0));
@@ -81,3 +80,4 @@ TEST(QuadricDegenerateTest, QEMTest7) {
 	Point3 dummy;
 	EXPECT_NO_THROW(q_small.solveOptimal(dummy));
 }
+

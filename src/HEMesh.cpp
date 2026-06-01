@@ -87,6 +87,25 @@ HEFace* HEMesh::createFace(HEHalfEdge* he) {
 	return f;
 }
 
+// 顶点Q矩阵初始化
+void HEMesh::computeInitialQMatrices() {
+	for (HEVert* vert : getVertices()) {
+		vert->quadric = Quadric();
+	}
+	for (HEFace* face : getFaces()) {
+		HEHalfEdge* he = face->edge;
+		HEVert* v0 = he->vertex;
+		HEVert* v1 = he->next->vertex;
+		HEVert* v2 = he->next->next->vertex;
+		Vector3 normal = (v1->position - v0->position).cross(v2->position - v1->position);
+		Quadric q(normal, v0->position);
+		v0->quadric += q;
+		v1->quadric += q;
+		v2->quadric += q;
+	}
+
+}
+
 // 添加三角形
 void HEMesh::addTriangle(const Point3& v0, const Point3& v1, const Point3& v2) {
 
@@ -206,6 +225,17 @@ void HEMesh::forEachOutgoingHalfEdge(HEVert* vert,
 	HEHalfEdge* start = vert->edge;
 	HEHalfEdge* current = start;
 	do {
+		if (!current) {
+			// 边界边，回到start开始往另一个方向遍历
+			current = start;
+			while (current->next) {
+				current = current->next->next->pair;
+				if (!callback(current)) {  // 一旦返回 false，立刻退出
+					break;
+				}
+			}
+			break;
+		}
 		if (!callback(current)) {  // 一旦返回 false，立刻退出
 			break;
 		}
@@ -240,7 +270,7 @@ void HEMesh::forEachFaceAroundVertex(HEVert* vert,
 
 // 边界边判断
 bool HEMesh::isBoundary(const HEHalfEdge* he) const {
-	if (he == nullptr) return false;
+	//if (he == nullptr) return false;
 	return he->face == nullptr;
 }
 
@@ -311,16 +341,16 @@ bool HEMesh::validate() const {
 	}
 
 	// 3. 三角形面的 next 链长度为 3 
-	//for (HEFace* face : getFaces()) {
-	//	HEHalfEdge* start = face->edge;
-	//	HEHalfEdge* current = start;
-	//	int count = 0;
-	//	do {
-	//		count++;
-	//		current = current->next;
-	//	} while (current != start && count <= 3);
-	//	if (count > 3) return false;
-	//}
+	for (HEFace* face : getFaces()) {
+		HEHalfEdge* start = face->edge;
+		HEHalfEdge* current = start;
+		int count = 0;
+		do {
+			count++;
+			current = current->next;
+		} while (current != start && count <= 3);
+		if (count > 3) return false;
+	}
 
 	// 4. 每条半边的 pair->pair == 自身
 	for (HEHalfEdge* edge : getHalfEdges()) {
@@ -329,7 +359,7 @@ bool HEMesh::validate() const {
 
 	// 5. 每条半边的 vertex（起点）不为空
 	for (HEHalfEdge* edge : getHalfEdges()) {
-		if (edge->vertex == nullptr) return false;
+		if (edge->vertex == nullptr || !edge->vertex->edge->vertex ) return false;
 	}
 	// 6. 每个顶点的 edge 是以该顶点为起点的半边
 	for (HEVert* vert : getVertices())
@@ -463,32 +493,55 @@ std::vector<HEVert*> HEMesh::get_neighbors(HEVert* vert) {
 	return results;
 }
 
+// 获取顶点的所有出边
+std::vector<HEHalfEdge*> HEMesh::get_outgoing_halfedges(HEVert* vert) {
+	std::vector<HEHalfEdge*> results;
+	forEachOutgoingHalfEdge(vert, [&](HEHalfEdge* he) {
+		results.push_back(he);
+		return true;
+		});
+	return results;
+}
+
 // 边折叠
 bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
+
 	// 1.1 校验能否折叠
 	HEVert* from = he->vertex;
 	HEVert* to;
+
 	HEHalfEdge* pair = he->pair;
-	if (newPosition == nullptr)
+	if (!pair)
 	{
-		HEHalfEdge* pair = he->pair;
-		if (pair == nullptr)
-		{
-			return false;
-		}
-		to = pair->vertex;
+		return false;
 	}
-	else
-	{
-		to = findOrCreateVertex(*newPosition);
-	}
+	to = pair->vertex;
+
+	// 如果newPosition是he的起始位置，交换from、to
+	//if () {
+
+	//}
+
+	//if (!newPosition)
+	//{
+	//	HEHalfEdge* pair = he->pair;
+	//	if (!pair)
+	//	{
+	//		return false;
+	//	}
+	//	to = pair->vertex;
+	//}
+	//else
+	//{
+	//	to = findOrCreateVertex(*newPosition);
+	//}
 
 	// 1.2 判断顶点类型
 	bool toIsBround = false;
 	bool fromIsBround = false;
 	if (newPosition == nullptr) {
-		forEachOutgoingHalfEdge(to, [&](HEHalfEdge* he) {
-			if (he->face == nullptr || he->pair->face == nullptr)
+		forEachOutgoingHalfEdge(to, [&](HEHalfEdge* edge) {
+			if (edge->face == nullptr || edge->pair->face == nullptr)
 			{
 				toIsBround = true;
 			}
@@ -498,16 +551,16 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 
 	// 记录需要执行修改起点的半边
 	std::vector<HEHalfEdge*> toUpdateEdges;
-	forEachOutgoingHalfEdge(from, [&](HEHalfEdge* he) {
-		if (he->face == nullptr || he->pair->face == nullptr)
+	forEachOutgoingHalfEdge(from, [&](HEHalfEdge* edge) {
+		if (edge->face == nullptr || edge->pair->face == nullptr)
 		{
 			fromIsBround = true;
 		}
-		toUpdateEdges.push_back(he);
+		toUpdateEdges.push_back(edge);
 		return true;
 		});
 
-	// 1.3 都是边界点
+	
 	// 记录需要执行操作的面、半边
 	// 要删除的from临边的半边
 	HEHalfEdge* n = nullptr;
@@ -518,6 +571,12 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 	HEFace* f1 = he->face;
 	HEFace* f2 = pair->face;
 
+	// 暂时不考虑起点是边界点的情况
+	if (fromIsBround) {
+		return false;
+	}
+
+	// 1.3 都是边界点
 	if (fromIsBround && toIsBround)
 	{
 		// 两个点是不是邻点
@@ -572,6 +631,14 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 		if (common != 2) return false;
 	}
 	// 2. 折叠合法,执行修改和删除操作
+	// 起点位置是否和newPosition是重合
+	bool isOne = std::abs(he->vertex->position.x - newPosition->x) < EPS_ABS
+		&& std::abs(he->vertex->position.y - newPosition->y) < EPS_ABS
+		&& std::abs(he->vertex->position.z - newPosition->z) < EPS_ABS;
+	if (newPosition) {
+		to->position = *newPosition;
+	}
+
 	// 2.1 可能要修改的点,删除的半边中以from为终点的半边的起点
 	pair->vertex->edge = he->next;
 	pairN->pair ->vertex->edge = pairN->next;
@@ -579,10 +646,10 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 
 	// 2.2 可能要修改的面，n的pair和pairN的pair所在的面（如果存在的话）
 	if (n->pair->face != nullptr) {
-		n->pair->face->edge = he->next->pair;
+		n->pair->face->edge = n->pair->next;
 	}
 	if (pairN->pair->face != nullptr) {
-		pairN->pair->face->edge = pairN->next;
+		pairN->pair->face->edge = pairN->pair->next;
 	}
 
 	// 2.3 以from为起点的半边的起点修改为to,同时更新map
@@ -592,38 +659,68 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 		toUpdateEdge->vertex = to;
 		updateEdgeVertex(toUpdateEdge, to);
 	}
-	// 2.4 删除from
-	m_vertMap.erase(he->vertex->position);
+
+	// 2.3.1 如果newPosition不为空，也就是he的终点改为to
+	bool exist = false;
+	if (newPosition) {
+		auto it = m_vertMap.find(he->pair->vertex->position);
+		if (it != m_vertMap.end()) {
+			m_vertMap.erase(it);
+		}
+		// 以he的终点为起点的半边的起点修改为to,同时更新map
+		forEachOutgoingHalfEdge(he->pair->vertex, [&](HEHalfEdge* he1) {
+			if (he1->pair == he) return true;
+			he1->vertex->position = he->pair->vertex->position;
+			updateEdgeVertex(he1, to);
+			he1->vertex->position = to->position;
+			return true;
+			});
+		he->pair->vertex = to;
+		m_vertMap[he->pair->vertex->position] = he->pair->vertex;
+	}
+
+	int fromIdx = from->index;
+	int toIdx = to->index;
+
+	// 2.4 更新包含被删除的半边和面的半边
+	pairN->next->next = pairN->pair->next;
+	pairN->next->face = pairN->pair->face;
+	he->next->next = n->pair->next;
+	he->next->face = n->pair->face;
+	n->pair->next->next->next = he->next;
+	pairN->pair->next->next->next = pairN->next;
+	// 2.5 删除from
+	// 如果he起点位置和折叠位置重合，缓存不需要删除
+	if (!isOne) m_vertMap.erase(he->vertex->position);
 	auto it1 = std::find(m_verts.begin(), m_verts.end(), he->vertex);
 	if (it1 != m_verts.end()) {
 		m_verts.erase(it1);
 	}
-
 	delete he->vertex;
+	he->vertex = nullptr;
 
-	// 2.5 删除两个face（如果不为空）
+	// 2.6 删除两个face（如果不为空）
 	if (f1 != nullptr) {
 		auto it5 = std::find(m_faces.begin(), m_faces.end(), f1);
 		if (it5 != m_faces.end()) {
 			m_faces.erase(it5);
 		}
-
 		delete f1;
+		f1 = nullptr;
 	}
 	if (f2 != nullptr) {
 		auto it5 = std::find(m_faces.begin(), m_faces.end(), f2);
 		if (it5 != m_faces.end()) {
 			m_faces.erase(it5);
 		}
-
 		delete f2;
+		f2 = nullptr;
 	}
 
-	// 2.6 删除半边(折叠半边与其pair、from相邻的半边与其pair)
+	// 2.7 删除半边(折叠半边与其pair、from相邻的半边与其pair)
 
 	// 折叠半边与其pair
-	int fromIdx = from->index;
-	int toIdx = to->index;
+
 	EdgeKey k1 = fromIdx < toIdx ? EdgeKey(fromIdx, toIdx) : EdgeKey(fromIdx, toIdx);
 	m_edgeMap.erase(k1);
 	auto it2 = std::find(m_edges.begin(), m_edges.end(), he);
@@ -634,8 +731,12 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 	if (it3 != m_edges.end()) {
 		m_edges.erase(it3);
 	}
+	if (he->ec) he->ec->valid = false;
 	delete he;
+	he = nullptr;
+	if (pair->ec) pair->ec->valid = false;
 	delete pair;
+	pair = nullptr;
 
 	// from相邻的半边与其pair
 	if (n != nullptr) {
@@ -651,8 +752,12 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 		if (it4 != m_edges.end()) {
 			m_edges.erase(it4);
 		}
+		if (n->pair->ec) n->pair->ec->valid = false;
 		delete n->pair;
+		n->pair = nullptr;
+		if (n->ec) n->ec->valid = false;
 		delete n;
+		n = nullptr;
 	}
 
 	if (pairN != nullptr) {
@@ -668,8 +773,12 @@ bool HEMesh::collapseEdge(HEHalfEdge* he, Point3* newPosition) {
 		if (it4 != m_edges.end()) {
 			m_edges.erase(it4);
 		}
+		if (pairN->pair->ec) pairN->pair->ec->valid = false;
 		delete pairN->pair;
+		pairN->pair = nullptr;
+		if (pairN->ec) pairN->ec->valid = false;
 		delete pairN;
+		pairN = nullptr;
 	}
 
 	return true;
@@ -947,4 +1056,139 @@ void HEMesh::meshQualityReport() const {
 	std::cout << "Number of degenerate faces: " << degenerateCount << "\n";
 	std::cout << "=========================================\n";
 
+}
+
+// 计算边折叠成本
+EdgeCollapse* HEMesh::computeCollapse(HEHalfEdge* he) {
+
+	Quadric q = he->vertex->quadric + he->pair->vertex->quadric;
+	Point3 p;
+	EdgeCollapse* ec = new EdgeCollapse();
+	ec->edge = he;
+	he->ec = ec;
+	ec->valid = true;
+	if (q.solveOptimal(p)) {
+		ec->p = p;
+	}
+	else {
+		// 退化到中点
+		ec->p = (he->vertex->position + he->pair->vertex->position) * 0.5;
+	}
+	ec->cost = q.evaluate(ec->p);
+
+	return ec;
+}
+
+
+//  主简化循环
+void HEMesh::simplify(int targetFaces) {
+
+	// 顶点Q矩阵初始化
+	computeInitialQMatrices();
+
+	// 构建边折叠信息的最小堆
+	std::priority_queue<std::pair<double, EdgeCollapse*>, std::vector<std::pair<double, EdgeCollapse*>>, std::greater<std::pair<double, EdgeCollapse*>>> pq;
+
+	// 所有内部边添加到队列中
+	for (HEHalfEdge* he : getHalfEdges())
+	{
+		if (he->index > he->pair->index) continue; // 避免重复添加
+		if (isBoundary(he)) continue; // 只添加内部边
+		EdgeCollapse* ec =  computeCollapse(he);
+		pq.push({ ec->cost, ec });
+		he->ec = ec;
+	}
+
+	int current_faces = numFaces();
+	while (!pq.empty() && current_faces > targetFaces) {
+		auto [cost, ec] = pq.top(); pq.pop();
+		if (!ec->edge || !ec->valid) {
+			delete ec;
+			ec = nullptr;
+			continue;
+		}
+
+		// 重新计算一次成本,检测代价是否因为邻域更新而变大
+		//EdgeCollapse new_ec = computeCollapse(ec.edge);
+
+		//if (new_ec.cost > ec.cost + EPS_ABS)
+		//{
+		//	pq.push(new_ec);
+		//  delete ec;
+		//	continue;
+		//}
+
+		// 执行边折叠
+		//bool as = validate();
+		bool success = collapseEdge(ec->edge, &ec->p);
+		//bool asd = validate();
+		//Point3 pp(1, 0, -1);
+		//collapseEdge(getHalfEdges()[2], &pp);
+
+		Point3 adj_p = ec->p;
+		ec->valid = false;
+		delete ec;
+		ec = nullptr;
+		if (success) {
+			
+			current_faces -= 2;
+			// 更新受影响的边
+			HEVert* vert = findOrCreateVertex(adj_p);
+			for (HEHalfEdge* adj_he : get_outgoing_halfedges(vert))
+			{
+				if (adj_he->index > adj_he->pair->index) adj_he = adj_he->pair;
+				EdgeCollapse* adj_ec = computeCollapse(adj_he);
+				if (adj_he->ec) adj_he->ec->valid = false; // 旧的标记无效，稍后弹出时会删除
+				pq.push({ adj_ec->cost, adj_ec });
+			}
+		}
+
+		
+
+	}
+	// 清理队列中剩余的 EdgeCollapse（防止内存泄漏）
+	while (!pq.empty()) {
+		auto [cost, ec] = pq.top(); pq.pop();
+		delete ec;
+		ec = nullptr;
+	}
+
+}
+
+// 获取所有边界边
+std::vector<HEHalfEdge*> HEMesh::getBoundaryEdges() {
+	std::vector<HEHalfEdge*> edges;
+	for (HEHalfEdge* edge : edges)
+	{
+		if (isBoundary(edge)) edges.push_back(edge);
+	}
+	return edges;
+}
+
+// 边界惩罚
+void HEMesh::penalizeBoundaries() {
+	auto edges = getBoundaryEdges();
+	// 用大权重构建惩罚Q矩阵
+	double penaltyWeight = 1000.0;
+	for (HEHalfEdge* edge : edges)
+	{
+		HEVert* from = edge->vertex;
+		HEVert* to = edge->pair->vertex;
+		Vector3 normal = (edge->pair->next->pair->vertex->position - to->position).cross(to->position - from->position).normalized();
+		Quadric penaltyQ(normal, from->position);
+		penaltyQ = penaltyQ * penaltyWeight;
+		from->quadric += penaltyQ;
+		to->quadric += penaltyQ;
+	}
+}
+
+// 特征边保护
+bool HEMesh::isFeatureEdge(HEHalfEdge* he, double angleThreshold) {
+	if (isBoundary(he) || isBoundary(he->pair)) return true; // 边界边是特征边
+	HEVert* from = he->vertex;
+	HEVert* to = he->pair->vertex;
+	Vector3 normal1 = (to->position - from->position).cross(he->next->pair->vertex->position - to->position).normalized();
+	Vector3 normal2 = (from->position - to->position).cross(he->pair->next->pair->vertex->position - from->position).normalized();
+	double angle = acos(std::max(-1.0, std::min(1.0, normal1.dot(normal2)))) * 180.0 / PI;
+	return 180 - angle < angleThreshold;
 }
