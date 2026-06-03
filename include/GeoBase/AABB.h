@@ -59,4 +59,10 @@ struct AABB
 	// 判断AABB是否与三角形相交（使用分离轴定理）
 	bool intersectTriangleAABB(const Triangle3& tri) const;
 
+	// AABB与球体相交测试
+	static bool boxIntersectsSphere(const AABB& box, const Point3& center, double radius);
+
+	// AABB与点的距离平方（如果点在AABB内部则为0）
+	static double distSqToPoint(const AABB& box, const Point3& point);
+
 };

@@ -57,6 +57,13 @@ struct Vector3 {
 		return std::sqrt(lengthSquared());
 	}
 
+	// 重写相等运算符，考虑浮点误差
+	bool operator==(const Vector3& other) const {
+		return std::abs(x - other.x) < EPS_ABS &&
+			std::abs(y - other.y) < EPS_ABS &&
+			std::abs(z - other.z) < EPS_ABS;
+	}
+
 	//// 点在向量上的投影
 	//Point3 projectOnto(const Vector3& other) const {
 	//	double otherLenSq = other.dot(other);

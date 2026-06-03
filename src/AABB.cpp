@@ -399,3 +399,20 @@ bool AABB::intersectTriangleAABB(const Triangle3& tri) const {
 //	tMaxOut = tMax;
 //	return true;
 //}
+
+// AABB与点的距离平方（如果点在AABB内部则为0）
+double AABB::distSqToPoint(const AABB& box, const Point3& point) {
+	double distSq = 0.0;
+	if (point.x < box.min.x) distSq += (box.min.x - point.x) * (box.min.x - point.x);
+	else if (point.x > box.max.x) distSq += (point.x - box.max.x) * (point.x - box.max.x);
+	if (point.y < box.min.y) distSq += (box.min.y - point.y) * (box.min.y - point.y);
+	else if (point.y > box.max.y) distSq += (point.y - box.max.y) * (point.y - box.max.y);
+	if (point.z < box.min.z) distSq += (box.min.z - point.z) * (box.min.z - point.z);
+	else if (point.z > box.max.z) distSq += (point.z - box.max.z) * (point.z - box.max.z);
+	return distSq;
+}
+
+// AABB与球体相交测试
+bool AABB::boxIntersectsSphere(const AABB& box, const Point3& center, double radius) {
+	return distSqToPoint(box, center) <= radius * radius;
+}

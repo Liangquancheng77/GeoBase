@@ -117,6 +117,18 @@
     <ClCompile Include="tests\TestQEM.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\Octree.cpp">
+      <Filter>源文件\Acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestOctree.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\KdTree.cpp">
+      <Filter>源文件\Acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestKdTree.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -169,6 +181,12 @@
     </ClInclude>
     <ClInclude Include="include\GeoBase\EdgeCollapse.h">
       <Filter>头文件\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\Octree.h">
+      <Filter>头文件\Acceleration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\KdTree.h">
+      <Filter>头文件\Acceleration</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

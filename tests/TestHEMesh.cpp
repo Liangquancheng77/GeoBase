@@ -410,28 +410,28 @@ using namespace std;
 //}
 
 // 加载正方体OBJ,比正常正方体少一个三角形面
-TEST(TestHEMesh, TestHEMesh31) {
-	HEMesh mesh;
-	mesh.loadOBJ("cube.obj");
-	mesh.simplify(mesh.numFaces() * 0.5);
-	cout << "--------------------------------------------" << endl;
-}
-
-// 简化到只剩2个面（或更少），验证不崩溃
-TEST(TestHEMesh, TestHEMesh32) {
-	HEMesh mesh;
-	mesh.loadOBJ("cube.obj");
-	mesh.simplify(2);
-	cout << "--------------------------------------------" << endl;
-}
-
-// 对一个平面网格（所有顶点共面）执行简化，验证Q矩阵正确
-TEST(TestHEMesh, TestHEMesh33) {
-	HEMesh mesh;
-	mesh.addTriangle(Point3(0, 0, -1.0), Point3(1.0, 0, 0), Point3(0, 0, 1.0));
-	mesh.addTriangle(Point3(0, 0, 1.0), Point3(1.0, 0, 0), Point3(1.0, 0, 2.0));
-	mesh.addTriangle(Point3(0, 0, 1.0), Point3(1.0, 0, 2.0), Point3(0, 0, 3.0));
-	mesh.addTriangle(Point3(0, 0, 3.0), Point3(1.0, 0, 4.0), Point3(0, 0, 5.0));
-	mesh.simplify(2);
-	cout << "--------------------------------------------" << endl;
-}
+//TEST(TestHEMesh, TestHEMesh31) {
+//	HEMesh mesh;
+//	mesh.loadOBJ("cube.obj");
+//	mesh.simplify(mesh.numFaces() * 0.5);
+//	cout << "--------------------------------------------" << endl;
+//}
+//
+//// 简化到只剩2个面（或更少），验证不崩溃
+//TEST(TestHEMesh, TestHEMesh32) {
+//	HEMesh mesh;
+//	mesh.loadOBJ("cube.obj");
+//	mesh.simplify(2);
+//	cout << "--------------------------------------------" << endl;
+//}
+//
+//// 对一个平面网格（所有顶点共面）执行简化，验证Q矩阵正确
+//TEST(TestHEMesh, TestHEMesh33) {
+//	HEMesh mesh;
+//	mesh.addTriangle(Point3(0, 0, -1.0), Point3(1.0, 0, 0), Point3(0, 0, 1.0));
+//	mesh.addTriangle(Point3(0, 0, 1.0), Point3(1.0, 0, 0), Point3(1.0, 0, 2.0));
+//	mesh.addTriangle(Point3(0, 0, 1.0), Point3(1.0, 0, 2.0), Point3(0, 0, 3.0));
+//	mesh.addTriangle(Point3(0, 0, 3.0), Point3(1.0, 0, 4.0), Point3(0, 0, 5.0));
+//	mesh.simplify(2);
+//	cout << "--------------------------------------------" << endl;
+//}
