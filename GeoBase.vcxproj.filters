@@ -129,6 +129,12 @@
     <ClCompile Include="tests\TestKdTree.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\GJK.cpp">
+      <Filter>源文件\Acceleration</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestGJK.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -186,6 +192,9 @@
       <Filter>头文件\Acceleration</Filter>
     </ClInclude>
     <ClInclude Include="include\GeoBase\KdTree.h">
+      <Filter>头文件\Acceleration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\GJK.h">
       <Filter>头文件\Acceleration</Filter>
     </ClInclude>
   </ItemGroup>

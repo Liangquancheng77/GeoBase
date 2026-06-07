@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\BVH.cpp" />
+    <ClCompile Include="src\GJK.cpp" />
     <ClCompile Include="src\HEMesh.cpp" />
     <ClCompile Include="src\KdTree.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="src\Triangle3.cpp" />
     <ClCompile Include="tests\TestAABB.cpp" />
     <ClCompile Include="tests\TestBVH.cpp" />
+    <ClCompile Include="tests\TestGJK.cpp" />
     <ClCompile Include="tests\TestHEMesh.cpp" />
     <ClCompile Include="tests\TestKdTree.cpp" />
     <ClCompile Include="tests\TestMatrix3.cpp" />
@@ -165,6 +167,7 @@
     <ClInclude Include="include\GeoBase\Common.h" />
     <ClInclude Include="include\GeoBase\EdgeCollapse.h" />
     <ClInclude Include="include\GeoBase\GeometryCommon.h" />
+    <ClInclude Include="include\GeoBase\GJK.h" />
     <ClInclude Include="include\GeoBase\HEMesh.h" />
     <ClInclude Include="include\GeoBase\KdTree.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />

@@ -22,8 +22,74 @@
 //#define RUN_VISUAL_AABB_RAY // AABB射线求交可视化
 //#define RUN_VISUAL_PICK   // 运行三角形鼠标拾取
 //#define RUN_BVH_COLLISION  // 开启BVH双模型碰撞检测
+//#define RUN_VISUAL_TETRAHEDRON // 运行四面体可视化（GJK单纯形调试）
 // ==========================================================
 
+
+// 绘制四面体（支持线框+半透明面，可直接传入GJK单纯形顶点）
+void drawTetrahedron(Viewer& viewer,
+    const Point3& v0, const Point3& v1, const Point3& v2, const Point3& v3,
+    bool drawWireframe = true, bool drawFaces = true, bool drawVertices = true) {
+    // 1. 绘制四个三角形面（半透明不同颜色，方便区分）
+    if (drawFaces) {
+        viewer.drawTriangle(v0, v1, v2, 0.8f, 0.2f, 0.2f); // 红色面
+        viewer.drawTriangle(v0, v1, v3, 0.2f, 0.8f, 0.2f); // 绿色面
+        viewer.drawTriangle(v0, v2, v3, 0.2f, 0.2f, 0.8f); // 蓝色面
+        viewer.drawTriangle(v1, v2, v3, 0.8f, 0.8f, 0.2f); // 黄色面
+    }
+
+    // 2. 绘制线框（白色实线）
+    if (drawWireframe) {
+        viewer.drawLine(v0, v1, 1.0f, 1.0f, 1.0f);
+        viewer.drawLine(v0, v2, 1.0f, 1.0f, 1.0f);
+        viewer.drawLine(v0, v3, 1.0f, 1.0f, 1.0f);
+        viewer.drawLine(v1, v2, 1.0f, 1.0f, 1.0f);
+        viewer.drawLine(v1, v3, 1.0f, 1.0f, 1.0f);
+        viewer.drawLine(v2, v3, 1.0f, 1.0f, 1.0f);
+    }
+
+    // 3. 绘制顶点（不同颜色标记，方便调试GJK单纯形）
+    if (drawVertices) {
+        viewer.drawPoint(v0, 1.0f, 0.0f, 0.0f, 0.1f); // 顶点0：红色
+        viewer.drawPoint(v1, 0.0f, 1.0f, 0.0f, 0.1f); // 顶点1：绿色
+        viewer.drawPoint(v2, 0.0f, 0.0f, 1.0f, 0.1f); // 顶点2：蓝色
+        viewer.drawPoint(v3, 1.0f, 1.0f, 0.0f, 0.1f); // 顶点3：黄色
+    }
+}
+
+// 四面体可视化主函数
+void visualTetrahedron() {
+    Viewer viewer(800, 600, "Tetrahedron Visualization - GJK Simplex Debug");
+
+    // 标准单位四面体（中心在原点）
+    Point3 v0(0.0, 0.0f, 0.0f);
+    Point3 v1(-2.0f, 0.0f, 0.0f);
+    Point3 v2(1.0f, -1.0f, -1.0f);
+    Point3 v3(-3.0f, -3.0f, 1.0f);
+
+    // ============================================================================
+
+    while (!viewer.shouldClose()) {
+        viewer.beginFrame();
+        Matrix4 view = viewer.getViewMatrix();
+        Matrix4 proj = Matrix4::createOrthographic(-3, 3, -3, 3, -1000, 1000);
+        Matrix4 mvp = proj.multiply(view);
+        viewer.setUniformMVP(mvp);
+
+        // 绘制世界坐标轴
+        viewer.drawLine({ 0,0,0 }, { 2,0,0 }, 1, 0, 0);
+        viewer.drawLine({ 0,0,0 }, { 0,2,0 }, 0, 1, 0);
+        viewer.drawLine({ 0,0,0 }, { 0,0,2 }, 0, 0, 1);
+
+        // 绘制原点（黑色大点，方便看GJK原点是否在四面体内部）
+        viewer.drawPoint({ 0,0,0 }, 0.0f, 0.0f, 0.0f, 0.15f);
+
+        // 绘制四面体
+        drawTetrahedron(viewer, v0, v1, v2, v3);
+
+        viewer.endFrame();
+    }
+}
 
 // ====================== BVH双模型碰撞检测测试 ======================
 void testBVHCollision() {
@@ -517,6 +583,9 @@ int main(int argc, char** argv) {
     return 0;
 #elif defined(RUN_BVH_COLLISION)
     testBVHCollision();
+    return 0;
+#elif defined(RUN_VISUAL_TETRAHEDRON)
+    visualTetrahedron();
     return 0;
 #else
     return 0;
