@@ -72,14 +72,14 @@
 			Vector3 ABCNormal = BA.cross(CA);
 			Vector3 AO = A * (-1);
 			Vector3 newDirection;
-            if ((newDirection = ABCNormal.cross(BA)).dot(AO) > 0)
+            if ((newDirection = ABCNormal.cross(BA)).dot(AO) > EPS_ABS)
             {
                 // 原点在BA外侧
                 direction = newDirection;
 				// 移除点C
 				simplex.erase(simplex.begin());
             }
-            else if ((newDirection = CA.cross(ABCNormal)).dot(AO) > 0) {
+            else if ((newDirection = CA.cross(ABCNormal)).dot(AO) > EPS_ABS) {
                 // 原点在CA外侧
                 direction = newDirection;
 				// 移除点B
@@ -115,6 +115,7 @@
 	// 单纯形进化（3D）
 	bool GJK::updateSimplex3D(std::vector<Vertex>& simplex, Vector3& direction) {
         // 3D单纯形可能是点、线段、三角形或四面体
+        //if (direction.lengthSquared() > EPS_ABS * EPS_ABS) direction = direction.normalized();
         if (simplex.size() == 2)
         {
             // 线段情况
@@ -167,6 +168,9 @@
                 // 移除点B
                 simplex.erase(simplex.begin() + 1);
             }
+            else {
+                direction = ABCNormal.dot(AO) > 0 ? ABCNormal : ABCNormal * (-1);
+            }
         }
 
 		else if (simplex.size() == 4)
@@ -176,8 +180,9 @@
 			Point3& B = simplex[2].point;
 			Point3& C = simplex[1].point;
 			Point3& D = simplex[0].point;
+            Vector3 AB = B - A;
+            if (A == B) return false; // 新点和旧点重合
 			Vector3 AO = A * (-1);
-			Vector3 AB = B - A;
 			Vector3 AC = C - A;
 			Vector3 AD = D - A;
 			Vector3 ABCNormal = AB.cross(AC);
@@ -215,13 +220,42 @@
         // 2.获取Minkowski差的支持点
         simplex.clear();
         simplex.push_back(supportMinkowski(shapeA, shapeB, direction));
+        Vector3 zero(0, 0, 0);
+        //if (simplex[0].point == zero) {
+
+        //}
         // 3.更新方向指向原点
         direction = simplex[0].point * (-1);
         while (true) {
             Vertex newPoint = supportMinkowski(shapeA, shapeB, direction);
-            if (newPoint.point.dot(direction) < 0) return false; // 没有越过原点，说明不相交
+            if (newPoint.point == zero) {
+                simplex.push_back(newPoint);
+                return true;
+            }
+            if (simplex.size()==1 && 
+                newPoint.point.cross(simplex[0].point).lengthSquared() < EPS_ABS * EPS_ABS && newPoint.point.dot(simplex[0].point) < EPS_ABS * EPS_ABS) // 原点在两个支撑点之间
+            {
+                simplex.push_back(newPoint);
+                return true;
+            }
+            //if (simplex.size() == 2) {
+
+            //    Vector3 BA = newPoint.point - simplex[1].point;
+            //    Vector3 CB = simplex[1].point - simplex[0].point;
+            //    Vector3 n = BA.cross(CB);
+            //    if (std::abs(n.dot(newPoint.point)) < EPS_ABS * EPS_ABS) { // 原点和三个支撑点共面
+            //        simplex.push_back(newPoint);
+            //        return true;
+            //    }
+            //}
+            if (newPoint.point.dot(direction) < -EPS_ABS * EPS_ABS) return false; // 没有越过原点，说明不相交
             simplex.push_back(newPoint);
             if (updateSimplex3D(simplex, direction)) return true;
+            if (simplex.size() == 4) {
+                // 新点与旧点重合，判断原点是否在旧三角形面内
+                Triangle3 tri(simplex[0].point, simplex[1].point, simplex[2].point);
+                return tri.contains(zero);
+            }
         }
 	}
 

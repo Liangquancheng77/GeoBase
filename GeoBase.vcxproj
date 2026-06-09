@@ -137,6 +137,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Matrix3.cpp" />
     <ClCompile Include="src\Matrix4.cpp" />
+    <ClCompile Include="src\MeshObject.cpp" />
     <ClCompile Include="src\Octree.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\QEM.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="include\GeoBase\KdTree.h" />
     <ClInclude Include="include\GeoBase\Matrix3.h" />
     <ClInclude Include="include\GeoBase\Matrix4.h" />
+    <ClInclude Include="include\GeoBase\MeshObject.h" />
     <ClInclude Include="include\GeoBase\Octree.h" />
     <ClInclude Include="include\GeoBase\Plane.h" />
     <ClInclude Include="include\GeoBase\QEM.h" />

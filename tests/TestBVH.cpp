@@ -1,37 +1,37 @@
-//#include <gtest/gtest.h>
-//#include "../include/GeoBase/AABB.h"
-//#include "../include/GeoBase/BVH.h"
-//#include "../include/GeoBase/Triangle3.h"
-//#include <vector>
-//#include <limits>
-//#include <ctime>
-//#include <random>
-//#include <fstream>
-//#include <cmath>
-//#include <iostream>
-//#include <iomanip>
-//using namespace std;
+#include <gtest/gtest.h>
+#include "../include/GeoBase/AABB.h"
+#include "../include/GeoBase/BVH.h"
+#include "../include/GeoBase/Triangle3.h"
+#include <vector>
+#include <limits>
+#include <ctime>
+#include <random>
+#include <fstream>
+#include <cmath>
+#include <iostream>
+#include <iomanip>
+using namespace std;
 //
 //
 //
 //
-//// 创建少量三角形，手动验证BVH的包围盒层次是否正确。
-//// 验证叶子节点的三角形索引数量不超过阈值。
-//// 验证根节点的AABB包含所有三角形。
-//TEST(BVHTest, PrintBVHHierarchy_ManualCheck) {
-//	std::vector<Triangle3> triangles = {
-//		Triangle3(Point3(3,0,1), Point3(3,0,2), Point3(3,1,1)),
-//		Triangle3(Point3(2.1,0,1), Point3(2.2,0,1), Point3(2.3,1,1)),
-//		Triangle3(Point3(0,0,0), Point3(1,0,0), Point3(0,1,0)),
-//		Triangle3(Point3(2,0,1), Point3(2,0,1), Point3(2,1,1)),
-//		Triangle3(Point3(3.1,0,1), Point3(3.2,0,1), Point3(3.3,1,1)),
-//		Triangle3(Point3(1.2,0,0), Point3(1.1,1,0), Point3(1.3,1,0))
-//	};
-//
-//	BVHNode* root = buildBVH(triangles, 0, triangles.size(), 0, 10);
-//
-//	cout << "BVH Hierarchy:" << endl;
-//}
+// 创建少量三角形，手动验证BVH的包围盒层次是否正确。
+// 验证叶子节点的三角形索引数量不超过阈值。
+// 验证根节点的AABB包含所有三角形。
+TEST(BVHTest, PrintBVHHierarchy_ManualCheck) {
+	std::vector<Triangle3> triangles = {
+		Triangle3(Point3(3,0,1), Point3(3,0,2), Point3(3,1,1)),
+		Triangle3(Point3(2.1,0,1), Point3(2.2,0,1), Point3(2.3,1,1)),
+		Triangle3(Point3(0,0,0), Point3(1,0,0), Point3(0,1,0)),
+		Triangle3(Point3(2,0,1), Point3(2,0,1), Point3(2,1,1)),
+		Triangle3(Point3(3.1,0,1), Point3(3.2,0,1), Point3(3.3,1,1)),
+		Triangle3(Point3(1.2,0,0), Point3(1.1,1,0), Point3(1.3,1,0))
+	};
+
+	BVHNode* root = buildBVH(triangles, 0, triangles.size(), 0, 10);
+
+	cout << "BVH Hierarchy:" << endl;
+}
 //
 //
 //

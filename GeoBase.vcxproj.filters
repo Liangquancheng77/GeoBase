@@ -135,6 +135,9 @@
     <ClCompile Include="tests\TestGJK.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\MeshObject.cpp">
+      <Filter>源文件\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -196,6 +199,9 @@
     </ClInclude>
     <ClInclude Include="include\GeoBase\GJK.h">
       <Filter>头文件\Acceleration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\MeshObject.h">
+      <Filter>头文件\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
