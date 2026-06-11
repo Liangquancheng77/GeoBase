@@ -138,6 +138,12 @@
     <ClCompile Include="src\MeshObject.cpp">
       <Filter>源文件\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="src\BezierCurve.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestBezierCurve.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -202,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="include\GeoBase\MeshObject.h">
       <Filter>头文件\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\BezierCurve.h">
+      <Filter>头文件\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AABB.cpp" />
+    <ClCompile Include="src\BezierCurve.cpp" />
     <ClCompile Include="src\BVH.cpp" />
     <ClCompile Include="src\GJK.cpp" />
     <ClCompile Include="src\HEMesh.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Triangle3.cpp" />
     <ClCompile Include="tests\TestAABB.cpp" />
+    <ClCompile Include="tests\TestBezierCurve.cpp" />
     <ClCompile Include="tests\TestBVH.cpp" />
     <ClCompile Include="tests\TestGJK.cpp" />
     <ClCompile Include="tests\TestHEMesh.cpp" />
@@ -164,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\AABB.h" />
+    <ClInclude Include="include\GeoBase\BezierCurve.h" />
     <ClInclude Include="include\GeoBase\BVH.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
     <ClInclude Include="include\GeoBase\EdgeCollapse.h" />
