@@ -23,6 +23,13 @@ public:
     const std::vector<Point3>& controlPoints() const;
     size_t degree() const;  // 阶数 = 控制点数 - 1
 
+
+    // 直接计算伯恩斯坦多项式
+    Point3 directBernstein(double t) const;
+
+    // 曲线导数
+    Vector3 derivative(double t) const;
+
 private:
 
 	std::vector<Point3> m_controlPoints;

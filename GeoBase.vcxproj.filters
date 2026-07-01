@@ -144,6 +144,30 @@
     <ClCompile Include="tests\TestBezierCurve.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\RationalBezierCurve.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BezierSurface.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestRationalBezierCurve.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BSplineCurve.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestBSplineCurve.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BSplineSurface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NURBSCurve.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestNURBSCurve.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -210,6 +234,21 @@
       <Filter>头文件\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="include\GeoBase\BezierCurve.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\RationalBezierCurve.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\BezierSurface.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\BSplineCurve.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\BSplineSurface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GeoBase\NURBSCurve.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
   </ItemGroup>

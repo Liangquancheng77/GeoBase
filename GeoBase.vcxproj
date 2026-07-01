@@ -131,6 +131,9 @@
   <ItemGroup>
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\BezierCurve.cpp" />
+    <ClCompile Include="src\BezierSurface.cpp" />
+    <ClCompile Include="src\BSplineCurve.cpp" />
+    <ClCompile Include="src\BSplineSurface.cpp" />
     <ClCompile Include="src\BVH.cpp" />
     <ClCompile Include="src\GJK.cpp" />
     <ClCompile Include="src\HEMesh.cpp" />
@@ -139,25 +142,30 @@
     <ClCompile Include="src\Matrix3.cpp" />
     <ClCompile Include="src\Matrix4.cpp" />
     <ClCompile Include="src\MeshObject.cpp" />
+    <ClCompile Include="src\NURBSCurve.cpp" />
     <ClCompile Include="src\Octree.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\QEM.cpp" />
     <ClCompile Include="src\Quaternion.cpp" />
+    <ClCompile Include="src\RationalBezierCurve.cpp" />
     <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Triangle3.cpp" />
     <ClCompile Include="tests\TestAABB.cpp" />
     <ClCompile Include="tests\TestBezierCurve.cpp" />
+    <ClCompile Include="tests\TestBSplineCurve.cpp" />
     <ClCompile Include="tests\TestBVH.cpp" />
     <ClCompile Include="tests\TestGJK.cpp" />
     <ClCompile Include="tests\TestHEMesh.cpp" />
     <ClCompile Include="tests\TestKdTree.cpp" />
     <ClCompile Include="tests\TestMatrix3.cpp" />
     <ClCompile Include="tests\TestMatrix4.cpp" />
+    <ClCompile Include="tests\TestNURBSCurve.cpp" />
     <ClCompile Include="tests\TestOctree.cpp" />
     <ClCompile Include="tests\TestPlane.cpp" />
     <ClCompile Include="tests\TestQEM.cpp" />
     <ClCompile Include="tests\TestQuaternion.cpp" />
+    <ClCompile Include="tests\TestRationalBezierCurve.cpp" />
     <ClCompile Include="tests\TestRay.cpp" />
     <ClCompile Include="tests\TestTriangle3.cpp" />
     <ClCompile Include="tests\TestVector3.cpp" />
@@ -167,6 +175,9 @@
   <ItemGroup>
     <ClInclude Include="include\GeoBase\AABB.h" />
     <ClInclude Include="include\GeoBase\BezierCurve.h" />
+    <ClInclude Include="include\GeoBase\BezierSurface.h" />
+    <ClInclude Include="include\GeoBase\BSplineCurve.h" />
+    <ClInclude Include="include\GeoBase\BSplineSurface.h" />
     <ClInclude Include="include\GeoBase\BVH.h" />
     <ClInclude Include="include\GeoBase\Common.h" />
     <ClInclude Include="include\GeoBase\EdgeCollapse.h" />
@@ -177,10 +188,12 @@
     <ClInclude Include="include\GeoBase\Matrix3.h" />
     <ClInclude Include="include\GeoBase\Matrix4.h" />
     <ClInclude Include="include\GeoBase\MeshObject.h" />
+    <ClInclude Include="include\GeoBase\NURBSCurve.h" />
     <ClInclude Include="include\GeoBase\Octree.h" />
     <ClInclude Include="include\GeoBase\Plane.h" />
     <ClInclude Include="include\GeoBase\QEM.h" />
     <ClInclude Include="include\GeoBase\Quaternion.h" />
+    <ClInclude Include="include\GeoBase\RationalBezierCurve.h" />
     <ClInclude Include="include\GeoBase\Ray.h" />
     <ClInclude Include="include\GeoBase\Triangle3.h" />
     <ClInclude Include="include\GeoBase\Vector3.h" />
