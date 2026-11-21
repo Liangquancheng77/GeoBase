@@ -19,14 +19,34 @@ Point3 BezierCurve::evaluate(double t) const {
 
 // 升阶：增加一个控制点，曲线形状不变
 void BezierCurve::elevateDegree() {
-	int len = m_controlPoints.size();
+	//int len = m_controlPoints.size();
+	//std::vector<Point3> newPoints(len + 1);
+	//newPoints[0] = m_controlPoints[0];
+	//newPoints[len] = m_controlPoints[len - 1];
+	//for (size_t i = 1; i < len; i++)
+	//{
+	//	newPoints[i] = m_controlPoints[i - 1] * (i / (len + 1)) + m_controlPoints[i] * (1 - i * (len + 1));
+	//}
+	//m_controlPoints = std::move(newPoints);
+	const int len = static_cast<int>(m_controlPoints.size());
+
+	// 点太少，没法升阶，直接退出
+	if (len < 2) return;
+
+	// 多一个控制点；起点和终点原样复制
 	std::vector<Point3> newPoints(len + 1);
 	newPoints[0] = m_controlPoints[0];
 	newPoints[len] = m_controlPoints[len - 1];
-	for (size_t i = 1; i < len; i++)
-	{
-		newPoints[i] = m_controlPoints[i - 1] * (i / (len + 1)) + m_controlPoints[i] * (1 - i * (len + 1));
+
+	// 用普通整数，不用只能装正数的类型
+	for (int i = 1; i < len; ++i) {
+		// 分母是 len，先转小数再除
+		const double a = static_cast<double>(i) / len;
+		newPoints[i] = m_controlPoints[i - 1] * a
+			+ m_controlPoints[i] * (1.0 - a);
 	}
+
+	// 转交所有权，不复制一遍
 	m_controlPoints = std::move(newPoints);
 }
 
@@ -78,12 +98,26 @@ Point3 BezierCurve::directBernstein(double t) const {
 
 // 曲线导数
 Vector3 BezierCurve::derivative(double t) const {
-	int n = m_controlPoints.size() - 1;
+	//int n = m_controlPoints.size() - 1;
+	//if (n < 1) return Vector3(0, 0, 0);
+	//std::vector<Point3> derivControlPoints(n);
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	derivControlPoints.push_back((m_controlPoints[i + 1] - m_controlPoints[i]) * n);
+	//}
+	//return BezierCurve(derivControlPoints).evaluate(t);
+
+	const int n = static_cast<int>(m_controlPoints.size()) - 1;
 	if (n < 1) return Vector3(0, 0, 0);
-	std::vector<Point3> derivControlPoints(n);
-	for (int i = 0; i < n; ++i)
-	{
-		derivControlPoints.push_back((m_controlPoints[i + 1] - m_controlPoints[i]) * n);
+
+	// 原来写成 dp(n)：会先填进 n 个零点// 现在只预留空间，不填任何元素
+	std::vector<Point3> dp;
+	dp.reserve(n);
+
+	for (int i = 0; i < n; ++i) {
+		dp.push_back((m_controlPoints[i + 1] - m_controlPoints[i])
+			* static_cast<double>(n));
 	}
-	return BezierCurve(derivControlPoints).evaluate(t);
+	return BezierCurve(dp).evaluate(t);
+
 }
