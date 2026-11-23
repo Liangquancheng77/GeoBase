@@ -37,6 +37,31 @@ double Triangle3::getArea() const {
 	return 0.5 * (v1 - v0).cross(v2 - v0).length();
 }
 
+// 用海伦公式算面积：先由三个顶点算出三条边长，再套公式。// 和上面的 getArea()（叉积法）算的是同一个面积，但走的是完全不同的路。// 这条路在三角形很扁时会丢精度，正好拿来和 getArea() 对比。
+double Triangle3::getAreaByHeron() const {
+	double a = (v1 - v0).length();
+	double b = (v2 - v1).length();
+	double c = (v0 - v2).length();
+	double s = (a + b + c) * 0.5;
+	double t = s * (s - a) * (s - b) * (s - c);
+	return std::sqrt(t > 0 ? t : 0);
+}
+
+// 更稳的海伦写法：先把边长从大到小排好，再换一种括号组合。// 能撑到更扁的三角形，但后面会看到它也救不彻底。
+double Triangle3::getAreaByHeronStable() const {
+	double a = (v1 - v0).length();
+	double b = (v2 - v1).length();
+	double c = (v0 - v2).length();
+	double x = a, y = b, z = c;
+	double tmp;
+	if (x < y) { tmp = x; x = y; y = tmp; }
+	if (x < z) { tmp = x; x = z; z = tmp; }
+	if (y < z) { tmp = y; y = z; z = tmp; }
+	double t = (x + (y + z)) * (z - (x - y))
+		* (z + (x - y)) * (x + (y - z));
+	return 0.25 * std::sqrt(t > 0.0 ? t : 0.0);
+}	
+
 //// 计算三角形的有向面积
 //double Triangle3::getSignedArea() const {
 //	Vector3 e1 = v1 - v0;
@@ -97,7 +122,6 @@ bool Triangle3::intersect(const Ray& ray, double& t, double& u, double& v, bool 
 	Vector3 R = S.cross(A1);
 
 	double det = Q.dot(A1); 
-
 	// 如果不剔除背面，det接近0表示平行或在三角形所在平面上；如果剔除背面，det小于等于0表示平行或背面
 	if ((cullBackface && det < EPS_ABS) || (!cullBackface && std::abs(det) < EPS_ABS)) return false;
 	

@@ -23,6 +23,12 @@ struct Triangle3
 	// 计算三角形的面积
 	double getArea() const;
 
+	// 用海伦公式算面积：先由三个顶点算出三条边长，再套公式。// 和上面的 getArea()（叉积法）算的是同一个面积，但走的是完全不同的路。// 这条路在三角形很扁时会丢精度，正好拿来和 getArea() 对比。
+	double getAreaByHeron() const;
+
+	// 更稳的海伦写法：先把边长从大到小排好，再换一种括号组合。// 能撑到更扁的三角形，但后面会看到它也救不彻底。
+	double getAreaByHeronStable() const;
+
 	//// 计算三角形的有向面积
 	//double getSignedArea() const;
 
