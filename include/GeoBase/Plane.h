@@ -30,6 +30,23 @@ struct Plane
     // 计算点到平面的有符号距离
     double signedDistance(const Point3& point) const;
 
+
+
+    // 故意不把方向调成单位长，直接算距离。// 方向有多长，算出来的距离就被放大多少倍，用来看清调成单位长的作用。
+    double signedDistanceWithRawNormal(const Point3& point, const Vector3& rawNormal) const;
+
+    // 把法向量绕 y 轴转一个很小的角度（弧度），再算距离。// 转完仍是单位长，所以这里纯粹是「方向偏了一点」，不是长度问题。
+    double signedDistanceWithTiltedNormal(const Point3& point, double tilt) const;
+
+    // 输入差一丁点，输出最多会被放大多少倍。// 等于「点到平面基准点的距离」除以「点到平面的距离」。
+    double distanceAmplification(const Point3& point) const;
+
+    // 把算错的距离当成对的，反推这个点本来该在哪儿。
+    Point3 pointThatExplainsDistance(double wrongDistance, const Point3& point) const;
+
+
+
+
     // 计算点在平面上的投影点
     Point3 projectPoint(const Point3& point) const;
 
