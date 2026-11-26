@@ -23,98 +23,380 @@
 #include <iomanip>
 #include <iostream>
 #include "../include/GeoBase/Triangle3.h"
+#include "../include/GeoBase/Plane.h"
+
+//namespace {
+//
+//    // 参考值：这个三角形底是 1、高是 h，面积本来就等于 0.5 乘 h，不用算就知道。
+//    double areaExact(double h) {
+//        return 0.5 * h;
+//    }
+//
+//    // 相对误差：算出来的和该有的差了多少，再除以该有的。// 用比例而不是绝对差，数值很小的时候也还能比得出好坏。
+//    double relErr(double got, double exact) {
+//        return std::abs(got - exact) / std::abs(exact);
+//    }
+//
+//} // namespace
+//
+//TEST(Day01Float, TwoWaysToComputeOneArea) {
+//    // 正常三角形：底 1、高 0.1，面积该是 0.05。
+//    Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, 0.1, 0.0));
+//    double exact = areaExact(0.1);
+//    std::cout << std::setprecision(17);
+//    std::cout << "heron=" << tri.getAreaByHeron()
+//        << "  cross=" << tri.getArea()
+//        << "  exact=" << exact << std::endl;
+//    // 正常形状下两条路都该很准，误差小于 1e-12。
+//    EXPECT_NEAR(tri.getAreaByHeron(), exact, 1e-12);
+//    EXPECT_NEAR(tri.getArea(), exact, 1e-12);
+//}
+//
+//TEST(Day01Float, ThinTriangleLosesDigits) {
+//    // 高度每次缩小 10 倍，一共 12 档。// 三角形越扁，两条边长越接近半周长，相减丢精度越厉害。
+//    std::cout << "h           heronRel     crossRel" << std::endl;
+//    for (int k = 1; k <= 12; ++k) {
+//        double h = std::pow(10.0, -k);
+//        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
+//        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
+//        double e2 = relErr(tri.getArea(), areaExact(h));
+//        std::cout << std::scientific << std::setprecision(3)
+//            << h << "    " << e1 << "    " << e2 << std::endl;
+//    }
+//    // 这一步只打印、不断言具体数字：数字以你这台机器跑出来的为准。
+//    SUCCEED();
+//}
+//
+//TEST(Day01Float, ThreeWaysCompared) {
+//    // 三条路各算一遍，把相对误差并排打出来，都是从 Triangle3 上调的。
+//    std::cout << "h           heronRel     stableRel    crossRel" << std::endl;
+//    std::cout << std::scientific << std::setprecision(3);
+//    for (int k = 1; k <= 12; ++k) {
+//        double h = std::pow(10.0, -k);
+//        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
+//        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
+//        double e3 = relErr(tri.getAreaByHeronStable(), areaExact(h));
+//        double e2 = relErr(tri.getArea(), areaExact(h));
+//        std::cout << h << "   " << e1 << "   " << e3
+//            << "   " << e2 << std::endl;
+//    }
+//    SUCCEED();
+//}
+//
+//TEST(Day01Float, MachineEpsilon) {
+//    // 机器精度：1 加上多少才刚好不再等于 1。// 双精度标准值约 2.22e-16，它的平方根约 1.49e-08。
+//    double eps = std::numeric_limits<double>::epsilon();
+//    std::cout << std::setprecision(10)
+//        << "eps=" << eps
+//        << "  sqrt(eps)=" << std::sqrt(eps) << std::endl;
+//    EXPECT_LT(eps, 1e-14);
+//    SUCCEED();
+// //   double a = 2.0;
+// ////   double b = 2.0 + (2*eps);
+// // double b = 2.0000000000000001;
+//	//bool equal = (a == b);
+// //   SUCCEED();
+//
+//    
+//}
+//
+//// 再往下压，看边长什么时候分不出差别 =====
+//TEST(Day01Float, PushToSixteenScales) {
+//    std::cout << "h           bMinusHalf   heronRel     crossRel" << std::endl;
+//    std::cout << std::scientific << std::setprecision(3);
+//    for (int k = 12; k <= 16; ++k) {
+//        double h = std::pow(10.0, -k);
+//        // 斜边 b：由三角形顶点直接算，用来看它离 0.5 还差多少。
+//        double b = (Point3(0.5, h, 0.0) - Point3(1.0, 0.0, 0.0)).length();
+//        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
+//        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
+//        double e2 = relErr(tri.getArea(), areaExact(h));
+//        std::cout << h << "   " << (b - 0.5) << "   "
+//            << e1 << "   " << e2 << std::endl;
+//    }
+//    SUCCEED();
+//}
+
+// ===== Day02 新增：量误差的小尺子 + 第一组检查题 =====// 换个名字是为了不和 Day01 那把尺子重名，两把尺子的算法一样。
+
 
 namespace {
 
-    // 参考值：这个三角形底是 1、高是 h，面积本来就等于 0.5 乘 h，不用算就知道。
-    double areaExact(double h) {
-        return 0.5 * h;
+    // 相对误差：算出来的和该有的差了多少，再除以该有的。
+    double relErrD2(double got, double exact) {
+        return std::abs(got - exact) / std::abs(exact);
     }
 
-    // 相对误差：算出来的和该有的差了多少，再除以该有的。// 用比例而不是绝对差，数值很小的时候也还能比得出好坏。
-    double relErr(double got, double exact) {
-        return std::abs(got - exact) / std::abs(exact);
+    // 造一个 z=0 的平面：法向朝 z，平面过原点。
+    Plane flatPlane() {
+        return Plane(Vector3(0.0, 0.0, 1.0), Point3(0.0, 0.0, 0.0));
     }
 
 } // namespace
 
-TEST(Day01Float, TwoWaysToComputeOneArea) {
-    // 正常三角形：底 1、高 0.1，面积该是 0.05。
-    Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, 0.1, 0.0));
-    double exact = areaExact(0.1);
-    std::cout << std::setprecision(17);
-    std::cout << "heron=" << tri.getAreaByHeron()
-        << "  cross=" << tri.getArea()
-        << "  exact=" << exact << std::endl;
-    // 正常形状下两条路都该很准，误差小于 1e-12。
-    EXPECT_NEAR(tri.getAreaByHeron(), exact, 1e-12);
-    EXPECT_NEAR(tri.getArea(), exact, 1e-12);
-}
-
-TEST(Day01Float, ThinTriangleLosesDigits) {
-    // 高度每次缩小 10 倍，一共 12 档。// 三角形越扁，两条边长越接近半周长，相减丢精度越厉害。
-    std::cout << "h           heronRel     crossRel" << std::endl;
-    for (int k = 1; k <= 12; ++k) {
-        double h = std::pow(10.0, -k);
-        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
-        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
-        double e2 = relErr(tri.getArea(), areaExact(h));
-        std::cout << std::scientific << std::setprecision(3)
-            << h << "    " << e1 << "    " << e2 << std::endl;
+TEST(Day02Amplify, NormalLengthScalesTheAnswer) {
+    Plane plane = flatPlane();
+    Point3 p(0.0, 0.0, 1e-3);
+    // 项目自带的算法用的是单位法向，这个结果是对的。
+    double correct = plane.signedDistance(p);
+    std::cout << std::setprecision(10);
+    std::cout << "k        rawDistance   ratio" << std::endl;
+    int ks[] = { 1, 2, 5, 10, 100 };
+    for (int i = 0; i < 5; ++i) {
+        double k = static_cast<double>(ks[i]);
+        Vector3 raw(0.0, 0.0, k);
+        double d = plane.signedDistanceWithRawNormal(p, raw);
+        std::cout << k << "      " << d << "      " << d / correct << std::endl;
+        // 方向长 k 倍，距离就正好错 k 倍。
+        EXPECT_NEAR(d, k * correct, 1e-15);
     }
-    // 这一步只打印、不断言具体数字：数字以你这台机器跑出来的为准。
-    SUCCEED();
+    EXPECT_NEAR(correct, 1e-3, 1e-15);
 }
 
-TEST(Day01Float, ThreeWaysCompared) {
-    // 三条路各算一遍，把相对误差并排打出来，都是从 Triangle3 上调的。
-    std::cout << "h           heronRel     stableRel    crossRel" << std::endl;
+TEST(Day02Amplify, TinyTiltBlowsUp) {
+    Plane plane = flatPlane();
+    // 点离平面 0.001，法向只偏 1e-9 弧度。
+    double h = 1e-3;
+    double tilt = 1e-9;
     std::cout << std::scientific << std::setprecision(3);
-    for (int k = 1; k <= 12; ++k) {
-        double h = std::pow(10.0, -k);
-        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
-        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
-        double e3 = relErr(tri.getAreaByHeronStable(), areaExact(h));
-        double e2 = relErr(tri.getArea(), areaExact(h));
-        std::cout << h << "   " << e1 << "   " << e3
-            << "   " << e2 << std::endl;
+    std::cout << "L         dTrue      dTilted     relErr     amplified" << std::endl;
+    int powers[] = { 0, 2, 4, 6, 8 };
+    for (int i = 0; i < 5; ++i) {
+        double L = std::pow(10.0, powers[i]);
+        Point3 p(L, 0.0, h);
+        double dTrue = plane.signedDistance(p);
+        double dTilt = plane.signedDistanceWithTiltedNormal(p, tilt);
+        double e = relErrD2(dTilt, dTrue);
+        std::cout << L << "   " << dTrue << "   " << dTilt
+            << "   " << e << "   " << e / tilt << std::endl;
     }
+    // 方向没偏时，答案和点沿 x 挪多远无关。
+    EXPECT_NEAR(plane.signedDistance(Point3(1e6, 0.0, h)), h, 1e-15);
     SUCCEED();
 }
 
-TEST(Day01Float, MachineEpsilon) {
-    // 机器精度：1 加上多少才刚好不再等于 1。// 双精度标准值约 2.22e-16，它的平方根约 1.49e-08。
-    double eps = std::numeric_limits<double>::epsilon();
+TEST(Day02Amplify, AmplificationMatchesTheory) {
+    Plane plane = flatPlane();
+    double h = 1e-3;
+    double tilt = 1e-9;
+    std::cout << std::scientific << std::setprecision(3);
+    std::cout << "L         measured     predicted" << std::endl;
+    int powers[] = { 0, 2, 4, 6, 8 };
+    for (int i = 0; i < 5; ++i) {
+        double L = std::pow(10.0, powers[i]);
+        Point3 p(L, 0.0, h);
+        double dTrue = plane.signedDistance(p);
+        double dTilt = plane.signedDistanceWithTiltedNormal(p, tilt);
+        double measured = relErrD2(dTilt, dTrue) / tilt;
+        double predicted = plane.distanceAmplification(p);
+        std::cout << L << "   " << measured << "   " << predicted << std::endl;
+    }
+    // 离基准点 1e6、离平面 1e-3，放大倍数约 1e9。
+    EXPECT_NEAR(plane.distanceAmplification(Point3(1e6, 0.0, h)), 1e9, 1e3);
+    SUCCEED();
+}
+
+TEST(Day02Amplify, BackwardErrorExplainsTheWrongAnswer) {
+    Plane plane = flatPlane();
+    Point3 p(0.0, 0.0, 1e-3);
+    double correct = plane.signedDistance(p);
+    // 方向没调成单位长，长度是 5，答案被放大 5 倍。
+    Vector3 raw(0.0, 0.0, 5.0);
+    double wrong = plane.signedDistanceWithRawNormal(p, raw);
+    // 前向误差：算出来的和该有的差了多少。
+    double forward = std::abs(wrong - correct);
+    // 后向误差：把错的当成对的，反推点本来该在哪儿。
+    Point3 p2 = plane.pointThatExplainsDistance(wrong, p);
+    double shift = (p2 - p).length();
     std::cout << std::setprecision(10)
-        << "eps=" << eps
-        << "  sqrt(eps)=" << std::sqrt(eps) << std::endl;
-    EXPECT_LT(eps, 1e-14);
-    SUCCEED();
- //   double a = 2.0;
- ////   double b = 2.0 + (2*eps);
- // double b = 2.0000000000000001;
-	//bool equal = (a == b);
- //   SUCCEED();
-
-    
+        << "correct=" << correct << "  wrong=" << wrong
+        << "  forward=" << forward << "  shift=" << shift << std::endl;
+    // 用正确的公式去算那个稍微不同的点，正好得到错误距离。
+    EXPECT_NEAR(plane.signedDistance(p2), wrong, 1e-15);
+    EXPECT_NEAR(shift, forward, 1e-15);
 }
 
-// 再往下压，看边长什么时候分不出差别 =====
-TEST(Day01Float, PushToSixteenScales) {
-    std::cout << "h           bMinusHalf   heronRel     crossRel" << std::endl;
+TEST(Day02Amplify, AmplificationDoesNotDependOnTilt) {
+    Plane plane = flatPlane();
+    double h = 1e-3;
+    Point3 p(1e6, 0.0, h);
+    double dTrue = plane.signedDistance(p);
     std::cout << std::scientific << std::setprecision(3);
-    for (int k = 12; k <= 16; ++k) {
-        double h = std::pow(10.0, -k);
-        // 斜边 b：由三角形顶点直接算，用来看它离 0.5 还差多少。
-        double b = (Point3(0.5, h, 0.0) - Point3(1.0, 0.0, 0.0)).length();
-        Triangle3 tri(Point3(0.0, 0.0, 0.0), Point3(1.0, 0.0, 0.0), Point3(0.5, h, 0.0));
-        double e1 = relErr(tri.getAreaByHeron(), areaExact(h));
-        double e2 = relErr(tri.getArea(), areaExact(h));
-        std::cout << h << "   " << (b - 0.5) << "   "
-            << e1 << "   " << e2 << std::endl;
+    std::cout << "tilt        relErr      amplified" << std::endl;
+    for (int k = 6; k <= 12; ++k) {
+        double tilt = std::pow(10.0, -k);
+        double dTilt = plane.signedDistanceWithTiltedNormal(p, tilt);
+        double e = relErrD2(dTilt, dTrue);
+        std::cout << tilt << "   " << e << "   " << e / tilt << std::endl;
     }
     SUCCEED();
 }
+
+TEST(Day02Amplify, BigCoordinatesSwallowTheGap) {
+    double base = 1e16;
+    Point3 farOrigin(base, 0.0, 0.0);
+    Point3 farPoint(base + 1.0, 0.0, 0.0);
+    Plane plane(Vector3(1.0, 0.0, 0.0), farOrigin);
+    double d = plane.signedDistance(farPoint);
+    std::cout << std::setprecision(17)
+        << "base+1 == base ? " << (farPoint.x == farOrigin.x)
+        << "   distance=" << d << "   shouldBe=1" << std::endl;
+    // 两个很大的数存不下那 1 的差别，相减之后直接是 0。
+    EXPECT_NEAR(d, 0.0, 1e-15);
+}
+
+// 新增：三把小尺子
+
+
+namespace d3 {
+
+    // 圆周率，造正多边形和算准确面积时要用。
+    const double PI_D3 = 3.14159265358979323846;
+
+    // 造一个圆心在指定位置的正 n 边形，顶点按逆时针排好。
+    std::vector<Point3> regularPolygon(int n, double radius, double offset) {
+        std::vector<Point3> pts;
+        for (int i = 0; i < n; ++i) {
+            double a = 2.0 * PI_D3 * i / n;
+            pts.push_back(Point3(offset + radius * std::cos(a), 
+                offset + radius * std::sin(a), 0.0));
+        }
+        return pts;
+    }
+
+    // 正 n 边形的准确面积：n 个等腰三角形，每块 0.5*r*r*sin(2π/n)。
+    double exactPolygonArea(int n, double radius) {
+        return 0.5 * n * radius * radius * std::sin(2.0 * PI_D3 / n);
+    }
+
+    // 相对误差：算出来的和该有的差了多少，再除以该有的。
+    double relErrD3(double got, double exact) {
+        return std::abs(got - exact) / std::abs(exact);
+    }
+
+} // namespace d3// 扫六档项数，把 N 个 0.1 加起来，看普通累加的误差怎么攒大、补偿累加为什么一直准。
+TEST(Day03Sum, ManyTinyTermsDriftAway) {
+    std::cout << std::scientific << std::setprecision(3);
+    std::cout << "N         plain        compensated   exact       errPlain    errComp" << std::endl;
+    int counts[] = { 10, 100, 1000, 10000, 100000, 20 };
+    for (int i = 5; i < 6; ++i) {
+        int n = counts[i];
+        std::vector<double> parts(n, 0.1);
+        double p = Triangle3::sumPlain(parts);
+        double k = Triangle3::sumCompensated(parts);
+        // 该有的答案用乘法一步算出来，和一项一项加是两条不同的路。
+        double exact = n * 0.1;
+        std::cout << n << "   " << p << "   " << k << "   " << exact
+            << "   " << std::abs(p - exact) << "   " << std::abs(k - exact) << std::endl;
+    }
+    std::vector<double> big(1000000, 0.1);
+    // 一百万项时普通累加差到 1e-6 量级，补偿累加仍和该有的答案一致。
+    EXPECT_NEAR(Triangle3::sumCompensated(big), 100000.0, 1e-9);
+    EXPECT_GT(std::abs(Triangle3::sumPlain(big) - 100000.0), 1e-7);
+}
+
+// 先放一个巨大数、塞进一万个很小的数、再减掉巨大数，看两种累加差多少。
+TEST(Day03Sum, BigPlusSmallMinusBig) {
+    int counts[] = { 10000, 100000, 1000000 };
+    std::cout << std::setprecision(10);
+    std::cout << "N         plain      compensated   exact" << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        int n = counts[i];
+        std::vector<double> parts;
+        parts.push_back(1e16);
+        for (int j = 0; j < n; ++j) parts.push_back(0.001);
+        parts.push_back(-1e16);
+        double p = Triangle3::sumPlain(parts);
+        double k = Triangle3::sumCompensated(parts);
+        double exact = n * 0.001;
+        std::cout << n << "   " << p << "   " << k << "   " << exact << std::endl;
+    }
+    std::vector<double> one(100000, 0.001);
+    one.insert(one.begin(), 1e16);
+    one.push_back(-1e16);
+    EXPECT_NEAR(Triangle3::sumPlain(one), 0.0, 1e-12);
+    EXPECT_NEAR(Triangle3::sumCompensated(one), 100.0, 1e-9);
+}
+
+// 把正多边形拆成一串三角形求总面积，和课本公式对上，并比较两种累加。
+TEST(Day03Polygon, AreaMatchesExactFormula) {
+    int counts[] = { 6, 12, 36, 100, 1000, 10000 };
+    std::cout << std::scientific << std::setprecision(6);
+    std::cout << "N         plain        compensated   exact        errPlain" << std::endl;
+    for (int i = 0; i < 6; ++i) {
+        int n = counts[i];
+        std::vector<Point3> poly = d3::regularPolygon(n, 1.0, 0.0);
+        double p = Triangle3::polygonArea(poly, false);
+        double k = Triangle3::polygonArea(poly, true);
+        double exact = d3::exactPolygonArea(n, 1.0);
+        std::cout << n << "   " << p << "   " << k << "   " << exact
+            << "   " << std::abs(p - exact) << std::endl;
+        EXPECT_NEAR(p, exact, 1e-10);
+        EXPECT_NEAR(k, exact, 1e-10);
+    }
+}
+
+// 按面积加权算正多边形的质心，圆心在哪儿质心就该在哪儿，看两种累加偏了多少。
+TEST(Day03Polygon, CentroidStaysAtOrigin) {
+    int counts[] = { 6, 12, 36, 100, 1000, 10000 };
+    std::cout << std::scientific << std::setprecision(3);
+    std::cout << "N         offsetPlain   offsetComp" << std::endl;
+    for (int i = 0; i < 6; ++i) {
+        int n = counts[i];
+        std::vector<Point3> poly = d3::regularPolygon(n, 1.0, 0.0);
+        Point3 c1 = Triangle3::polygonCentroid(poly, false);
+        Point3 c2 = Triangle3::polygonCentroid(poly, true);
+        double e1 = std::sqrt(c1.x * c1.x + c1.y * c1.y);
+        double e2 = std::sqrt(c2.x * c2.x + c2.y * c2.y);
+        std::cout << n << "   " << e1 << "   " << e2 << std::endl;
+        EXPECT_LT(e1, 1e-10);
+        EXPECT_LT(e2, 1e-10);
+    }
+}
+
+// 把 0.1 加 N 次再减掉 N-1 次，答案本该正好是 0.1，看普通累加攒下多少误差。
+TEST(Day03Sum, MixedSignsStillBenefit) {
+    int counts[] = { 10, 100, 1000, 10000, 100000, 1000000 };
+    std::cout << std::scientific << std::setprecision(3);
+    std::cout << "N         plain        compensated   errPlain" << std::endl;
+    for (int i = 0; i < 6; ++i) {
+        int n = counts[i];
+        std::vector<double> parts;
+        for (int j = 0; j < n; ++j) parts.push_back(0.1);
+        for (int j = 0; j < n - 1; ++j) parts.push_back(-0.1);
+        double p = Triangle3::sumPlain(parts);
+        double k = Triangle3::sumCompensated(parts);
+        std::cout << n << "   " << p << "   " << k << "   " << std::abs(p - 0.1) << std::endl;
+        EXPECT_NEAR(k, 0.1, 1e-14);
+    }
+}
+
+// 把多边形整体挪到很远的地方，看补偿累加能不能救回每一块面积自己算歪的部分。
+TEST(Day03Polygon, BigOffsetCannotBeFixedBySummation) {
+    double offs[] = { 0.0, 1e6, 1e9 };
+    std::cout << std::setprecision(12);
+    std::cout << "off        plain        compensated   exact        diffComp" << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        std::vector<Point3> poly = d3::regularPolygon(36, 1.0, offs[i]);
+        double p = Triangle3::polygonArea(poly, false);
+        double k = Triangle3::polygonArea(poly, true);
+        double exact = d3::exactPolygonArea(36, 1.0);
+        std::cout << offs[i] << "   " << p << "   " << k << "   " << exact
+            << "   " << std::abs(k - exact) << std::endl;
+    }
+    SUCCEED();
+}
+
+//TEST(Day03Sum, ManyTinyTermsDriftAway2) {
+//
+//    double a = 1000.00000000000000;
+//	double b = 0.00000000000001;
+//	double c = a + b;
+//    double d = c-a-b;
+//    c = c+d;
+//    double e = 0.1;
+//
+//}
 
 //namespace {
 //

@@ -272,3 +272,62 @@ bool Triangle3::intersect_sat(const Triangle3& other) const {
 //	intersectionPoint2 = Point3(0, 0, 0);
 //	return intersect_sat(other);
 //}
+
+// 普通累加、补偿累加、多边形面积与质心 =====// 把一串数字从头到尾一个接一个加起来，最普通的写法。
+double Triangle3::sumPlain(const std::vector<double>& parts) {
+	double sum = 0.0;
+	for (int i = 0; i < (int)parts.size(); ++i) {
+		sum += parts[i];
+	}
+	return sum;
+}
+
+// 把一串数字加起来，每次被舍掉的小数单独攒着，下一次补回去。
+double Triangle3::sumCompensated(const std::vector<double>& parts) {
+	double sum = 0.0;
+	double lost = 0.0;
+	for (int i = 0; i < (int)parts.size(); ++i) {
+		// 上一步被扔掉的那一点，先补进这一项里。
+		double y = parts[i] - lost;
+		double t = sum + y;
+		// t 减 sum 是这次真正加进去的部分，再减 y 就是这次又被扔掉的那一点。
+		lost = (t - sum) - y;
+		sum = t;
+	}
+	return sum;
+}
+
+// 把多边形拆成一串三角形累加出总面积；true 用补偿累加，false 用普通累加。
+double Triangle3::polygonArea(const std::vector<Point3>& poly, bool compensated) {
+	std::vector<double> areas;
+	int n = (int)poly.size();
+	for (int i = 1; i + 1 < n; ++i) {
+		Triangle3 piece(poly[0], poly[i], poly[i + 1]);
+		areas.push_back(piece.getArea());
+	}
+	return compensated ? sumCompensated(areas) : sumPlain(areas);
+}
+
+// 把多边形拆成一串三角形，按面积加权算质心；true 用补偿累加，false 用普通累加。
+Point3 Triangle3::polygonCentroid(const std::vector<Point3>& poly, bool compensated) {
+	std::vector<double> areas, mx, my, mz;
+	int n = (int)poly.size();
+	for (int i = 1; i + 1 < n; ++i) {
+		Triangle3 piece(poly[0], poly[i], poly[i + 1]);
+		double a = piece.getArea();
+		// 三角形的中心就是三个顶点的平均位置。
+		Point3 c = (piece.v0 + piece.v1 + piece.v2) / 3.0;
+		areas.push_back(a);
+		mx.push_back(a * c.x);
+		my.push_back(a * c.y);
+		mz.push_back(a * c.z);
+	}
+	double total = compensated ? sumCompensated(areas) : sumPlain(areas);
+	if (total == 0.0) return Point3(0.0, 0.0, 0.0);
+	if (compensated) {
+		return Point3(sumCompensated(mx) / total,
+			sumCompensated(my) / total,
+			sumCompensated(mz) / total);
+	}
+	return Point3(sumPlain(mx) / total, sumPlain(my) / total, sumPlain(mz) / total);
+}

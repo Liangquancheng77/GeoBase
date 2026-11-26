@@ -168,6 +168,36 @@
     <ClCompile Include="tests\TestNURBSCurve.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="tests\01_basic_shapes.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\02_boolean_mesh.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\03_ray_pick_compare.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\04_cam_interference_detect.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\05_curve_nurbs_geobase_compare.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Interpolation.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestInterpolation.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\TestInterpolationPlotter.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\OCCTMathTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests\NumericRegression.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GeoBase\Common.h">
@@ -251,5 +281,12 @@
     <ClInclude Include="include\GeoBase\NURBSCurve.h">
       <Filter>头文件\Math</Filter>
     </ClInclude>
+    <ClInclude Include="include\GeoBase\Interpolation.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tools\plot.py" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

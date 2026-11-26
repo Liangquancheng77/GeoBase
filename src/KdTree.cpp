@@ -101,7 +101,7 @@ void KdTree::searchNN(KdTree::KdTreeNode* node, const Point3& query, Point3& bes
 	}
 }
 
-// 最近邻搜索
+// 最近邻搜索 
 Point3 KdTree::nearestNeighbor(const Point3& query) const {
 	if (!root) throw std::runtime_error("KdTree is empty");
 	double bestDist = std::numeric_limits<double>::max();

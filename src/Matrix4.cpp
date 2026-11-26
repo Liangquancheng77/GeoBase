@@ -399,9 +399,13 @@ Matrix4 Matrix4::inverse() const {
 		m[0][2] * inv.m[2][0] +   // inv[2][0] = cofactor(0,2)
 		m[0][3] * inv.m[3][0];    // inv[3][0] = cofactor(0,3)
 
+	//if (!std::isfinite(det) || std::abs(det) < 1e-12) {
+	//	throw std::runtime_error(
+	//		"Matrix4::inverse() failed: matrix is singular or near-singular.");
+	//}
+
 	if (std::abs(det) < 1e-12) {
-		// 行列式接近0，矩阵不可逆；返回单位矩阵作为安全值
-		return Matrix4();
+		return Matrix4(); // 返回单位矩阵，避免除以零
 	}
 
 	double invDet = 1.0 / det;

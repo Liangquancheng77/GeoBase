@@ -18,19 +18,19 @@ include_directories(
 # 通配符 * 自动匹配所有文件
 # 不用手动写，新增文件自动识别
 # ======================
-file(GLOB ALL_FILES
-    # src下所有cpp
+file(GLOB ALL_FILES CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/*.cpp
-    # 头文件
     ${PROJECT_SOURCE_DIR}/include/GeoBase/*.h
-    # glad源码
     ${PROJECT_SOURCE_DIR}/thirdparty/glad/*.c
     ${PROJECT_SOURCE_DIR}/*.h
     ${PROJECT_SOURCE_DIR}/*.cpp
+    ${PROJECT_SOURCE_DIR}/tests/*.cpp
 )
 
-# 生成程序
 add_executable(GeoBase ${ALL_FILES})
+
+# [D01] RUN_TESTS 是 src/main.cpp:563 的测试入口开关，不定义就走可视化分支
+target_compile_definitions(GeoBase PRIVATE RUN_TESTS)
 
 # 链接GLFW
 find_package(glfw3 CONFIG REQUIRED)

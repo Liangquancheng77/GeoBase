@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="11" failures="9" disabled="0" errors="0" timestamp="2026-11-18T17:37:41" time="0.018" name="AllTests">
+  <testsuite name="Matrix4Inverse" tests="6" failures="4" disabled="0" errors="0" time="0.004">
+    <testcase name="IdentityRoundTrip" status="run" time="0" classname="Matrix4Inverse" />
+    <testcase name="WellConditionedRoundTrip" status="run" time="0" classname="Matrix4Inverse" />
+    <testcase name="SingularZeroRowThrows" status="run" time="0.001" classname="Matrix4Inverse">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:141&#x0A;Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.&#x0A;  Actual: it throws nothing." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:141
+Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.
+  Actual: it throws nothing.]]></failure>
+    </testcase>
+    <testcase name="SingularDuplicateRowsThrows" status="run" time="0" classname="Matrix4Inverse">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:154&#x0A;Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.&#x0A;  Actual: it throws nothing." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:154
+Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.
+  Actual: it throws nothing.]]></failure>
+    </testcase>
+    <testcase name="SingularDependentRowThrows" status="run" time="0" classname="Matrix4Inverse">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:167&#x0A;Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.&#x0A;  Actual: it throws nothing." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:167
+Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.
+  Actual: it throws nothing.]]></failure>
+    </testcase>
+    <testcase name="NonFiniteThrows" status="run" time="0" classname="Matrix4Inverse">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:175&#x0A;Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.&#x0A;  Actual: it throws nothing." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:175
+Expected: { (void)A.inverse(); } throws an exception of type std::runtime_error.
+  Actual: it throws nothing.]]></failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="BezierElevate" tests="2" failures="2" disabled="0" errors="0" time="0.004">
+    <testcase name="QuadraticInvariance" status="run" time="0.002" classname="BezierElevate">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:195&#x0A;Expected: (e) &lt; (1e-12), actual: 1.55644e+19 vs 1e-12&#x0A;t = 0.25" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:195
+Expected: (e) < (1e-12), actual: 1.55644e+19 vs 1e-12
+t = 0.25]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:195&#x0A;Expected: (e) &lt; (1e-12), actual: 2.76701e+19 vs 1e-12&#x0A;t = 0.5" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:195
+Expected: (e) < (1e-12), actual: 2.76701e+19 vs 1e-12
+t = 0.5]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:195&#x0A;Expected: (e) &lt; (1e-12), actual: 2.59407e+19 vs 1e-12&#x0A;t = 0.75" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:195
+Expected: (e) < (1e-12), actual: 2.59407e+19 vs 1e-12
+t = 0.75]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:199&#x0A;The difference between mid.x and 1.25 is 2.7670116110564327e+19, which exceeds 1e-12, where&#x0A;mid.x evaluates to 2.7670116110564327e+19,&#x0A;1.25 evaluates to 1.25, and&#x0A;1e-12 evaluates to 9.9999999999999998e-13." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:199
+The difference between mid.x and 1.25 is 2.7670116110564327e+19, which exceeds 1e-12, where
+mid.x evaluates to 2.7670116110564327e+19,
+1.25 evaluates to 1.25, and
+1e-12 evaluates to 9.9999999999999998e-13.]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:200&#x0A;The difference between mid.y and 1.0 is 1.3835058055282164e+19, which exceeds 1e-12, where&#x0A;mid.y evaluates to 1.3835058055282164e+19,&#x0A;1.0 evaluates to 1, and&#x0A;1e-12 evaluates to 9.9999999999999998e-13." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:200
+The difference between mid.y and 1.0 is 1.3835058055282164e+19, which exceeds 1e-12, where
+mid.y evaluates to 1.3835058055282164e+19,
+1.0 evaluates to 1, and
+1e-12 evaluates to 9.9999999999999998e-13.]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:201&#x0A;The difference between mid.z and 0.25 is 6.9175290276410819e+18, which exceeds 1e-12, where&#x0A;mid.z evaluates to 6.9175290276410819e+18,&#x0A;0.25 evaluates to 0.25, and&#x0A;1e-12 evaluates to 9.9999999999999998e-13." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:201
+The difference between mid.z and 0.25 is 6.9175290276410819e+18, which exceeds 1e-12, where
+mid.z evaluates to 6.9175290276410819e+18,
+0.25 evaluates to 0.25, and
+1e-12 evaluates to 9.9999999999999998e-13.]]></failure>
+    </testcase>
+    <testcase name="CubicDoubleElevationInvariance" status="run" time="0.001" classname="BezierElevate">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:216&#x0A;Expected: (e) &lt; (1e-12), actual: 4.18139e+38 vs 1e-12&#x0A;t = 0.20000000000000001" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:216
+Expected: (e) < (1e-12), actual: 4.18139e+38 vs 1e-12
+t = 0.20000000000000001]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:216&#x0A;Expected: (e) &lt; (1e-12), actual: 7.97537e+38 vs 1e-12&#x0A;t = 0.5" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:216
+Expected: (e) < (1e-12), actual: 7.97537e+38 vs 1e-12
+t = 0.5]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:216&#x0A;Expected: (e) &lt; (1e-12), actual: 3.33204e+38 vs 1e-12&#x0A;t = 0.80000000000000004" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:216
+Expected: (e) < (1e-12), actual: 3.33204e+38 vs 1e-12
+t = 0.80000000000000004]]></failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="BezierDerivative" tests="3" failures="3" disabled="0" errors="0" time="0.007">
+    <testcase name="MatchesCentralDifference" status="run" time="0.005" classname="BezierDerivative">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:232&#x0A;Expected: (e) &lt; (1e-6), actual: 3.68571 vs 1e-06" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:232
+Expected: (e) < (1e-6), actual: 3.68571 vs 1e-06]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:234&#x0A;The difference between analytic.x and 4.26 is 3.6857100000000003, which exceeds 1e-9, where&#x0A;analytic.x evaluates to 0.57428999999999975,&#x0A;4.26 evaluates to 4.2599999999999998, and&#x0A;1e-9 evaluates to 1.0000000000000001e-09." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:234
+The difference between analytic.x and 4.26 is 3.6857100000000003, which exceeds 1e-9, where
+analytic.x evaluates to 0.57428999999999975,
+4.26 evaluates to 4.2599999999999998, and
+1e-9 evaluates to 1.0000000000000001e-09.]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:235&#x0A;The difference between analytic.y and 0.69 is 0.059010000000000118, which exceeds 1e-9, where&#x0A;analytic.y evaluates to 0.63098999999999983,&#x0A;0.69 evaluates to 0.68999999999999995, and&#x0A;1e-9 evaluates to 1.0000000000000001e-09." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:235
+The difference between analytic.y and 0.69 is 0.059010000000000118, which exceeds 1e-9, where
+analytic.y evaluates to 0.63098999999999983,
+0.69 evaluates to 0.68999999999999995, and
+1e-9 evaluates to 1.0000000000000001e-09.]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:236&#x0A;The difference between analytic.z and 1.26 is 1.1749499999999999, which exceeds 1e-9, where&#x0A;analytic.z evaluates to 0.085049999999999973,&#x0A;1.26 evaluates to 1.26, and&#x0A;1e-9 evaluates to 1.0000000000000001e-09." type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:236
+The difference between analytic.z and 1.26 is 1.1749499999999999, which exceeds 1e-9, where
+analytic.z evaluates to 0.085049999999999973,
+1.26 evaluates to 1.26, and
+1e-9 evaluates to 1.0000000000000001e-09.]]></failure>
+    </testcase>
+    <testcase name="EndpointValues" status="run" time="0.001" classname="BezierDerivative">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:243&#x0A;Expected: (maxAbsDiff(c.derivative(0.0), Vector3(3, 6, 0))) &lt; (1e-12), actual: 6 vs 1e-12" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:243
+Expected: (maxAbsDiff(c.derivative(0.0), Vector3(3, 6, 0))) < (1e-12), actual: 6 vs 1e-12]]></failure>
+    </testcase>
+    <testcase name="LinearCurveConstant" status="run" time="0.001" classname="BezierDerivative">
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:255&#x0A;Expected: (e) &lt; (1e-12), actual: 6 vs 1e-12&#x0A;t = 0" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:255
+Expected: (e) < (1e-12), actual: 6 vs 1e-12
+t = 0]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:255&#x0A;Expected: (e) &lt; (1e-12), actual: 4.5 vs 1e-12&#x0A;t = 0.29999999999999999" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:255
+Expected: (e) < (1e-12), actual: 4.5 vs 1e-12
+t = 0.29999999999999999]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:255&#x0A;Expected: (e) &lt; (1e-12), actual: 2.5 vs 1e-12&#x0A;t = 0.69999999999999996" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:255
+Expected: (e) < (1e-12), actual: 2.5 vs 1e-12
+t = 0.69999999999999996]]></failure>
+      <failure message="E:\c++project\GeoBase\tests\NumericRegression.cpp:255&#x0A;Expected: (e) &lt; (1e-12), actual: 1 vs 1e-12&#x0A;t = 1" type=""><![CDATA[E:\c++project\GeoBase\tests\NumericRegression.cpp:255
+Expected: (e) < (1e-12), actual: 1 vs 1e-12
+t = 1]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

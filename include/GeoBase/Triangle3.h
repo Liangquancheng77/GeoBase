@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include "AABB.h"
 #include "GeometryCommon.h"
+#include <vector>
 
 struct Triangle3
 {
@@ -55,6 +56,18 @@ struct Triangle3
 
 	//// 判断与另一个三角形是否相交（使用分离轴SAT定理）并返回两个交点（如果有）
 	//bool intersect_sat(const Triangle3& other, Point3& intersectionPoint1, Point3& intersectionPoint2) const;
+
+	// 把一串数字从头到尾一个接一个加起来，最普通的写法。
+	static double sumPlain(const std::vector<double>& parts);
+
+	// 把一串数字加起来，每次被舍掉的小数单独攒着，下一次补回去。
+	static double sumCompensated(const std::vector<double>& parts);
+
+	// 把多边形拆成一串三角形累加出总面积；true 用补偿累加，false 用普通累加。
+	static double polygonArea(const std::vector<Point3>& poly, bool compensated);
+
+	// 把多边形拆成一串三角形，按面积加权算质心；true 用补偿累加，false 用普通累加。
+	static Point3 polygonCentroid(const std::vector<Point3>& poly, bool compensated);
 
 };
 

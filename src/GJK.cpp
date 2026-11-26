@@ -487,7 +487,7 @@
                     }
                 }
                 if (!visiable) {
-                    newFaces.push_back(faces[i]);
+                    newFaces.push_back(faces[i]); 
                     newNormals.push_back(normals[i]);
                 }
             }

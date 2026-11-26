@@ -30,6 +30,46 @@ double Plane::signedDistance(const Point3& point) const {
 	return vecToPoint.dot(normal);
 }
 
+
+// ===== 新增：点到平面距离的误差传播实验 =====// 已有的 signedDistance() 一行都没改，下面四个都是新函数。
+// 不把方向调成单位长，直接点乘。// 方向长度是 k，算出来的距离就是正确距离的 k 倍。
+double Plane::signedDistanceWithRawNormal(const Point3& point,
+	const Vector3& rawNormal) const {
+	Vector3 vecToPoint = point - origin;
+	return vecToPoint.dot(rawNormal);
+}
+
+// 把单位法向量绕 y 轴转 tilt 弧度，再算距离。// 转完仍是单位长，所以这里纯粹是「方向偏了一点」。
+double Plane::signedDistanceWithTiltedNormal(const Point3& point,
+	double tilt) const {
+	Vector3 vecToPoint = point - origin;
+	double ct = std::cos(tilt);
+	double st = std::sin(tilt);
+	// 绕 y 轴转：新的 x 是 x*ct + z*st，新的 z 是 -x*st + z*ct。
+	Vector3 tilted(normal.x * ct + normal.z * st,
+		normal.y,
+		-normal.x * st + normal.z * ct);
+	return vecToPoint.dot(tilted);
+}
+
+// 输入差一丁点，输出最多差多少倍。// 分子是点到平面基准点的距离，分母是点到平面的距离；
+// 分母很小时这个倍数会很大，也就是「离基准点远、又几乎贴在平面上」最危险。
+double Plane::distanceAmplification(const Point3& point) const {
+	double d = signedDistance(point);
+	double w = (point - origin).length();
+	if (std::abs(d) < 1e-300) return 0.0;
+	return w / std::abs(d);
+}
+
+// 把算错的距离当成正确答案，反推点本来该在哪。// 沿法向挪「错误距离减正确距离」那么多，再代入 signedDistance 正好得错误距离。
+Point3 Plane::pointThatExplainsDistance(double wrongDistance,
+	const Point3& point) const {
+	double correct = signedDistance(point);
+	return point + normal * (wrongDistance - correct);
+}
+
+
+
 // 计算点在平面上的投影点
 Point3 Plane::projectPoint(const Point3& point) const {
 	double distance = signedDistance(point);
