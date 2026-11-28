@@ -54,6 +54,18 @@ public:
     // 是否是正交矩阵
     bool isOrthogonal() const;
 
+    // 造一个三行几乎一样的矩阵：eps 越小，这个方程组越难算准。
+    static Matrix3 nearlySingular(double eps);
+
+    // 量一个矩阵「一行加起来最多有多大」：每行取绝对值相加，返回最大的那行。
+    static double rowSumNorm(const Matrix3& a);
+
+    // 事先算出「右端差一点点，解最多差多少倍」：矩阵大小乘上它逆矩阵的大小。
+    static double conditionNumberByRowSum(const Matrix3& a);
+
+    // 用项目里现成的求逆解方程组 A*x=b：解就是 A 的逆乘右端。
+    static Vector3 solveByInverse(const Matrix3& a, const Vector3& b);
+
 };
 
 //欧拉角

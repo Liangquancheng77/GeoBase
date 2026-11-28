@@ -175,6 +175,38 @@ Matrix3 Matrix3::inverse() const {
     return adj;
 }
 
+
+// 新增：病态方程组、行和范数、放大上界 =====// 造一个三行几乎一样的矩阵：eps 越小，这个方程组越难算准。
+Matrix3 Matrix3::nearlySingular(double eps) {
+    Matrix3 a;
+    a.m[0][0] = 1.0; a.m[0][1] = 1.0;       a.m[0][2] = 1.0;
+    a.m[1][0] = 1.0; a.m[1][1] = 1.0 + eps; a.m[1][2] = 1.0;
+    a.m[2][0] = 1.0; a.m[2][1] = 1.0;       a.m[2][2] = 1.0 + eps;
+    return a;
+}
+
+// 量一个矩阵「一行加起来最多有多大」：每行取绝对值相加，返回最大的那行。
+double Matrix3::rowSumNorm(const Matrix3& a) {
+    double best = 0.0;
+    for (int i = 0; i < 3; ++i) {
+        double sum = 0.0;
+        for (int j = 0; j < 3; ++j) sum += std::fabs(a.m[i][j]);
+        if (sum > best) best = sum;
+    }
+    return best;
+}
+
+// 事先算出「右端差一点点，解最多差多少倍」：矩阵大小乘上它逆矩阵的大小。
+double Matrix3::conditionNumberByRowSum(const Matrix3& a) {
+    return rowSumNorm(a) * rowSumNorm(a.inverse());
+}
+
+// 用项目里现成的求逆解方程组 A*x=b：解就是 A 的逆乘右端。
+Vector3 Matrix3::solveByInverse(const Matrix3& a, const Vector3& b) {
+    return a.inverse() * b;
+}
+
+
 // 欧拉角转正交矩阵
 Matrix3 Matrix3::fromEulerAngles(const EulerAngles angles) {
 
